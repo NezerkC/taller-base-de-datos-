@@ -13,6 +13,14 @@ SET DEFINE OFF;
 -- 1. LIMPIEZA DE OBJETOS PREVIOS (ORDEN POR DEPENDENCIAS)
 -- ----------------------------------------------------------------------------
 BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE SEQ_LOG_ERRORES';
+EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE SEQ_LIQUIDACION_CLIENTE';
+EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN
     EXECUTE IMMEDIATE 'DROP TABLE LOG_ERRORES CASCADE CONSTRAINTS';
 EXCEPTION WHEN OTHERS THEN NULL; END;
 /
@@ -102,7 +110,7 @@ CREATE TABLE VENTA (
     CONSTRAINT pk_venta PRIMARY KEY (id_venta),
     CONSTRAINT un_venta_boleta UNIQUE (nro_boleta),
     CONSTRAINT fk_venta_cliente FOREIGN KEY (id_cliente) REFERENCES CLIENTE (id_cliente),
-    CONSTRAINT chk_venta_totales CHECK (subtotal >= 0 AND descuento >= 0 AND total >= 0),
+    CONSTRAINT chk_venta_totales CHECK (subtotal >= 0 AND descuento >= 0 AND total = (subtotal - descuento)),
     CONSTRAINT chk_venta_estado CHECK (estado_venta IN ('PENDIENTE', 'LIQUIDADA', 'ANULADA'))
 );
 
@@ -119,10 +127,14 @@ CREATE TABLE DETALLE_VENTA (
     CONSTRAINT fk_det_prod FOREIGN KEY (id_producto) REFERENCES PRODUCTO (id_producto),
     CONSTRAINT chk_det_cant CHECK (cantidad > 0),
     CONSTRAINT chk_det_precio CHECK (precio_unitario > 0),
-    CONSTRAINT chk_det_subtotal CHECK (subtotal_linea > 0)
+    CONSTRAINT chk_det_subtotal CHECK (subtotal_linea = cantidad * precio_unitario)
 );
 
 -- Tabla 2.6: LIQUIDACION_CLIENTE (Destino de procesamiento PL/SQL con RECORD y VARRAY)
+-- JUSTIFICACIÓN 3FN / SNAPSHOT: La columna 'nombre_completo' representa una desnormalización
+-- intencional como 'Snapshot Histórico' (cierre contable). Esto garantiza que la liquidación
+-- conserve de forma inmutable la identidad nominal del cliente al momento de liquidar,
+-- desacoplándola de eventuales mutaciones posteriores en la tabla maestra CLIENTE.
 CREATE TABLE LIQUIDACION_CLIENTE (
     id_liquidacion      NUMBER(8)     NOT NULL,
     id_cliente          NUMBER(6)     NOT NULL,
@@ -148,6 +160,12 @@ CREATE TABLE LOG_ERRORES (
     fecha_registro DATE           DEFAULT SYSDATE NOT NULL,
     CONSTRAINT pk_log_errores PRIMARY KEY (id_log)
 );
+
+-- ----------------------------------------------------------------------------
+-- 2.8 SECUENCIAS (GENERACIÓN CONCURRENTE Y ATÓMICA DE IDENTIFICADORES)
+-- ----------------------------------------------------------------------------
+CREATE SEQUENCE SEQ_LOG_ERRORES START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+CREATE SEQUENCE SEQ_LIQUIDACION_CLIENTE START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
 -- ----------------------------------------------------------------------------
 -- 3. CARGA INICIAL DE DATOS (DML)

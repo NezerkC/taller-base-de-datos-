@@ -31,6 +31,17 @@ El alcance de esta primera fase comprende:
 - **Herramienta de Desarrollo y Administración:** Oracle SQL Developer / Oracle LiveSQL.
 - **Modelado:** Notación Chen / Relacional Crow's Foot.
 
+### 1.4 Criterios de Modelado Relacional, 3FN y Concurrencia
+Para asegurar robustez en el diseño de Sonido Vivo, se aplican las siguientes directrices arquitectónicas:
+1. **Normalización y Justificación de 3FN (Snapshot Histórico):**
+   El modelo relacional satisface la Tercera Forma Normal (3FN), eliminando dependencias transitivas en las entidades maestras (`CATEGORIA`, `PRODUCTO`, `CLIENTE`). No obstante, en la tabla de control `LIQUIDACION_CLIENTE`, el atributo `nombre_completo` se mantiene de forma desnormalizada deliberadamente bajo el patrón **Snapshot Histórico (Cierre Contable)**. Esto asegura que cada liquidación conserve inmutable el nombre del cliente vigente a la fecha de emisión, aislando el registro contable de eventuales modificaciones posteriores en la ficha maestra del cliente.
+2. **Integridad Declarativa en Datos Calculados:**
+   Para impedir inconsistencias aritméticas a nivel de motor, el DDL incorpora restricciones `CHECK` que obligan la correspondencia exacta de importes:
+   - En `DETALLE_VENTA`: `CONSTRAINT chk_det_subtotal CHECK (subtotal_linea = cantidad * precio_unitario)`.
+   - En `VENTA`: `CONSTRAINT chk_venta_totales CHECK (subtotal >= 0 AND descuento >= 0 AND total = (subtotal - descuento))`.
+3. **Control de Concurrencia mediante Objetos SEQUENCE:**
+   Se descarta el uso de `MAX(id) + 1` para la asignación de identificadores, dado que en entornos multiusuario provoca condiciones de carrera y fallos por clave duplicada (`ORA-00001`). En su lugar, se implementan objetos `SEQUENCE` de Oracle (`SEQ_LOG_ERRORES` y `SEQ_LIQUIDACION_CLIENTE`), garantizando asignación secuencial atómica y escalable.
+
 ---
 
 ## 2. Tipos de Datos Compuestos (RECORD y VARRAY)
@@ -111,11 +122,20 @@ Corresponden a reglas de negocio que no violan la sintaxis SQL ni las restriccio
 - **`e_stock_insuficiente`:** Se gatilla cuando un cliente intenta comprar una cantidad mayor a las unidades reales físicas disponibles en el inventario de Sonido Vivo (`v_cantidad_solicitada > v_stock_actual`).
 - **`e_cantidad_invalida`:** Se activa si se envía una cantidad menor o igual a cero en la línea de detalle.
 
-### 4.3 Integración y Persistencia en `LOG_ERRORES`
-Todo error capturado (sea nativo o de usuario) ejecuta un bloque compensatorio:
-1. Aplica `ROLLBACK` a la transacción para evitar registros huérfanos.
-2. Inserta una fila en la tabla de auditoría `LOG_ERRORES` registrando el código (`SQLCODE`), mensaje explicativo (`SQLERRM`), el módulo de origen y la marca temporal.
-3. Permite al sistema mantener trazabilidad total de incidentes sin provocar la caída abrupta de la sesión del cliente.
+### 4.3 Integración Transaccional y Persistencia en `LOG_ERRORES`
+El flujo transaccional implementa un ciclo completo ACID:
+1. **Flujo Exitoso (Venta Concretada):** Una vez validadas la existencia del cliente, la validez de los parámetros y la suficiencia de stock, el bloque ejecuta la mutación efectiva del inventario:
+   ```sql
+   UPDATE PRODUCTO
+   SET stock = stock - v_cantidad_solicitada
+   WHERE id_producto = v_id_producto;
+   COMMIT;
+   ```
+2. **Flujo de Excepción (Compensación y Auditoría):** Ante cualquier fallo o transgresión de regla de negocio (`e_stock_insuficiente`, `e_cantidad_invalida`, `NO_DATA_FOUND`):
+   - Aplica `ROLLBACK` inmediato para revertir operaciones intermedias.
+   - Obtiene el siguiente identificador correlativo atómicamente mediante `SEQ_LOG_ERRORES.NEXTVAL`, eliminando problemas de concurrencia.
+   - Inserta una fila en la tabla de auditoría `LOG_ERRORES` registrando el código (`SQLCODE`), mensaje explicativo (`SQLERRM`), el módulo de origen y la marca temporal.
+   - Mantiene trazabilidad total de incidentes sin provocar la caída abrupta de la sesión del cliente.
 
 ---
 

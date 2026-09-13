@@ -138,3 +138,10 @@
 
 ### P4: ¿Cuál es el riesgo de usar Triggers para actualizar tablas y cómo se soluciona?
 > **Respuesta:** *"El mayor riesgo en Oracle es el error `ORA-04091: table is mutating`, que ocurre cuando un trigger de fila (`FOR EACH ROW`) intenta consultar o modificar la misma tabla que disparó el evento. En nuestra arquitectura, el trigger sobre `DETALLE_VENTA` modifica una tabla externa (`PRODUCTO`), evitando la mutación. En casos donde se deba interactuar con la misma tabla, la solución arquitectónica estándar de Oracle es utilizar un Trigger Compuesto (*Compound Trigger*)."*
+
+### P5: En LIQUIDACION_CLIENTE guardan `nombre_completo`, ¿eso no viola la 3FN respecto a CLIENTE?
+> **Respuesta:** *"Desde una perspectiva puramente teórica de normalización OLTP, existe una dependencia funcional transitiva. Sin embargo, a nivel arquitectónico y contable se implementa deliberadamente el patrón de **Snapshot Histórico (Cierre Contable)**: una liquidación es un registro inmutable en el tiempo. Si no persistimos el nombre al momento de liquidar y el cliente modifica sus apellidos o razón social en el futuro, corromperíamos retroactivamente la validez histórica y fiscal del cierre."*
+
+### P6: ¿Por qué emplear objetos SEQUENCE en lugar de calcular MAX(id) + 1?
+> **Respuesta:** *"Calcular `MAX(id) + 1` es un antipatrón en sistemas multiusuario porque no es atómico bajo concurrencia: si dos cajas o sesiones intentan registrar simultáneamente, ambas leerán el mismo máximo y una fallará por colisión de clave primaria (`ORA-00001`). Las `SEQUENCE` de Oracle generan identificadores secuenciales únicos de forma atómica en memoria compartida (SGA) sin provocar bloqueos ni condiciones de carrera."*
+

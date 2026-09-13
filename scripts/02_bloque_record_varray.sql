@@ -36,7 +36,7 @@ DECLARE
     -- ------------------------------------------------------------------------
     v_liquidacion       t_rec_liquidacion;
     v_escalas_descuento t_arr_tasas := t_arr_tasas(0.00, 5.00, 10.00);
-    v_secuencia_liq     NUMBER(8) := 1;
+    v_contador_liq      NUMBER(8) := 0;
 
 BEGIN
     DBMS_OUTPUT.PUT_LINE('================================================================================');
@@ -102,7 +102,7 @@ BEGIN
             fecha_liquidacion,
             observacion
         ) VALUES (
-            v_secuencia_liq,
+            SEQ_LIQUIDACION_CLIENTE.NEXTVAL,
             v_liquidacion.id_cliente,
             v_liquidacion.nombre_completo,
             v_liquidacion.total_bruto,
@@ -120,13 +120,13 @@ BEGIN
                              ' | Tasa: ' || LPAD(TO_CHAR(v_liquidacion.tasa_descuento_pct, '90.00'), 6) || '%' ||
                              ' | Neto: $' || LPAD(TO_CHAR(v_liquidacion.total_neto, '999G999G999'), 12));
 
-        v_secuencia_liq := v_secuencia_liq + 1;
+        v_contador_liq := v_contador_liq + 1;
 
     END LOOP;
 
     COMMIT;
     DBMS_OUTPUT.PUT_LINE('--------------------------------------------------------------------------------');
-    DBMS_OUTPUT.PUT_LINE('>> PROCESO FINALIZADO: ' || (v_secuencia_liq - 1) || ' liquidaciones calculadas y guardadas.');
+    DBMS_OUTPUT.PUT_LINE('>> PROCESO FINALIZADO: ' || v_contador_liq || ' liquidaciones calculadas y guardadas.');
     DBMS_OUTPUT.PUT_LINE('================================================================================');
 
 END;

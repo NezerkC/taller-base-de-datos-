@@ -35,7 +35,7 @@ Se desarrolla un sistema de base de datos en Oracle que permite registrar produc
 
 ### 2.1 En Alcance (In Scope)
 1. **Modelo de Datos Relacional:**
-   - Creación de tablas base (`CATEGORIA`, `PRODUCTO`, `CLIENTE`, `VENTA`, `DETALLE_VENTA`, `HISTORIAL_LIQUIDACION`, `LOG_ERRORES`).
+   - Creación de tablas base (`CATEGORIA`, `PRODUCTO`, `CLIENTE`, `VENTA`, `DETALLE_VENTA`, `LIQUIDACION_CLIENTE`, `LOG_ERRORES`).
    - Carga de datos iniciales basada en el catálogo real de Sonido Vivo.
 2. **Procesamiento con Tipos de Datos Compuestos (IE1.1.1):**
    - Implementación de `RECORD` para agrupar atributos heterogéneos de liquidación (código cliente, total bruto, descuento, total neto).

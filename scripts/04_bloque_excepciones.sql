@@ -13,12 +13,11 @@ DECLARE
     -- ------------------------------------------------------------------------
     e_stock_insuficiente    EXCEPTION;
     e_cantidad_invalida     EXCEPTION;
-    e_limite_credito_exceso EXCEPTION;
 
     -- Parámetros de simulación de venta (Intento de compra en caja o web)
     v_id_cliente_solicitado  NUMBER := 1;          -- Cliente Carlos Valenzuela
     v_codigo_prod_solicitado VARCHAR2(10) := 'GE002'; -- Gibson Les Paul Tribute (Stock: 2)
-    v_cantidad_solicitada    NUMBER := 5;          -- Forzamos venta superior al stock para gatillar excepción
+    v_cantidad_solicitada    NUMBER := 5;          -- Forzamos venta superior al stock para gatillar excepción (cambiar a <=2 para flujo exitoso)
 
     -- Variables de soporte para consulta y cálculo
     v_id_producto   PRODUCTO.id_producto%TYPE;
@@ -38,9 +37,6 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('================================================================================');
     DBMS_OUTPUT.PUT_LINE('     SONIDO VIVO — SIMULADOR TRANSACCIONAL CON CONTROL DE EXCEPCIONES           ');
     DBMS_OUTPUT.PUT_LINE('================================================================================');
-
-    -- Obtener siguiente correlativo de log
-    SELECT NVL(MAX(id_log), 0) + 1 INTO v_secuencia_log FROM LOG_ERRORES;
 
     -- ------------------------------------------------------------------------
     -- VALIDACIÓN 1: Existencia del cliente (Gatilla NO_DATA_FOUND si no existe)
@@ -78,8 +74,16 @@ BEGIN
         RAISE e_stock_insuficiente;
     END IF;
 
-    -- Si las validaciones son exitosas, se procesaría la venta normalmente
-    DBMS_OUTPUT.PUT_LINE('>> ÉXITO: Stock reservado y transacción completada satisfactoriamente.');
+    -- ------------------------------------------------------------------------
+    -- ACCIÓN TRANSACCIONAL: Descuento efectivo de inventario
+    -- ------------------------------------------------------------------------
+    UPDATE PRODUCTO
+    SET stock = stock - v_cantidad_solicitada
+    WHERE id_producto = v_id_producto;
+
+    DBMS_OUTPUT.PUT_LINE('>> ÉXITO: Stock descontado en tabla PRODUCTO (' || 
+                         v_stock_actual || ' -> ' || (v_stock_actual - v_cantidad_solicitada) || 
+                         ' unidades). Venta completada satisfactoriamente.');
     COMMIT;
 
 EXCEPTION
@@ -88,6 +92,7 @@ EXCEPTION
     -- ========================================================================
     WHEN NO_DATA_FOUND THEN
         ROLLBACK;
+        v_secuencia_log := SEQ_LOG_ERRORES.NEXTVAL;
         v_cod_error := 'ORA-01403 (NO_DATA_FOUND)';
         v_msj_error := 'Error de búsqueda: El cliente ID ' || v_id_cliente_solicitado || 
                        ' o el producto código ' || v_codigo_prod_solicitado || ' no existen en el sistema.';
@@ -101,6 +106,7 @@ EXCEPTION
 
     WHEN TOO_MANY_ROWS THEN
         ROLLBACK;
+        v_secuencia_log := SEQ_LOG_ERRORES.NEXTVAL;
         v_cod_error := 'ORA-01422 (TOO_MANY_ROWS)';
         v_msj_error := 'Inconsistencia de catálogo: Se encontró más de un registro para el identificador consultado.';
         
@@ -109,12 +115,14 @@ EXCEPTION
         COMMIT;
 
         DBMS_OUTPUT.PUT_LINE('[EXCEPCIÓN ORACLE CAPTURADA]: ' || v_msj_error);
+        DBMS_OUTPUT.PUT_LINE('>> Incidente auditado en LOG_ERRORES con ID: ' || v_secuencia_log);
 
     -- ========================================================================
     -- MANEJO DE EXCEPCIONES DEFINIDAS POR EL USUARIO
     -- ========================================================================
     WHEN e_stock_insuficiente THEN
         ROLLBACK;
+        v_secuencia_log := SEQ_LOG_ERRORES.NEXTVAL;
         v_cod_error := 'USR-001 (STOCK_INSUFICIENTE)';
         v_msj_error := 'Operación rechazada: No es posible vender ' || v_cantidad_solicitada || 
                        ' unidades del producto ' || v_nombre_prod || '. Stock disponible: ' || v_stock_actual || '.';
@@ -128,6 +136,7 @@ EXCEPTION
 
     WHEN e_cantidad_invalida THEN
         ROLLBACK;
+        v_secuencia_log := SEQ_LOG_ERRORES.NEXTVAL;
         v_cod_error := 'USR-002 (CANTIDAD_INVALIDA)';
         v_msj_error := 'Operación rechazada: La cantidad a comprar debe ser un entero estrictamente mayor a cero.';
         
@@ -136,12 +145,14 @@ EXCEPTION
         COMMIT;
 
         DBMS_OUTPUT.PUT_LINE('[EXCEPCIÓN DE NEGOCIO CAPTURADA]: ' || v_msj_error);
+        DBMS_OUTPUT.PUT_LINE('>> Incidente auditado en LOG_ERRORES con ID: ' || v_secuencia_log);
 
     -- ========================================================================
     -- CAPTURA GENERAL DE ERRORES IMPREVISTOS
     -- ========================================================================
     WHEN OTHERS THEN
         ROLLBACK;
+        v_secuencia_log := SEQ_LOG_ERRORES.NEXTVAL;
         v_cod_error := 'ORA-' || TO_CHAR(SQLCODE);
         v_msj_error := SUBSTR(SQLERRM, 1, 380);
         
@@ -150,6 +161,7 @@ EXCEPTION
         COMMIT;
 
         DBMS_OUTPUT.PUT_LINE('[ERROR NO CONTROLADO]: ' || v_msj_error);
+        DBMS_OUTPUT.PUT_LINE('>> Incidente auditado en LOG_ERRORES con ID: ' || v_secuencia_log);
 
 END;
 /
