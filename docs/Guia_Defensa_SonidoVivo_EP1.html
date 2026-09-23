@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Guía de Defensa Oral y Código — Sonido Vivo (EP1)</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 18mm 15mm 18mm 15mm;
+        }
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            color: #1e293b;
+            background-color: #ffffff;
+            line-height: 1.5;
+            font-size: 11pt;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            color: #0f172a;
+            font-size: 20pt;
+            margin: 0 0 6px 0;
+            font-weight: 700;
+        }
+        .header .subtitle {
+            color: #2563eb;
+            font-size: 13pt;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            font-size: 9.5pt;
+            color: #475569;
+            background: #f8fafc;
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        .meta-grid strong {
+            color: #1e293b;
+        }
+        .slide-card {
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            margin-bottom: 22px;
+            overflow: hidden;
+            page-break-inside: avoid;
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .slide-header {
+            background: #0f172a;
+            color: #ffffff;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .slide-header h2 {
+            font-size: 12.5pt;
+            margin: 0;
+            color: #f8fafc;
+            font-weight: 600;
+        }
+        .slide-badge {
+            background: #2563eb;
+            color: #ffffff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 8.5pt;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .slide-body {
+            padding: 14px 16px;
+        }
+        .speech-box {
+            background: #eff6ff;
+            border-left: 4px solid #2563eb;
+            padding: 10px 14px;
+            border-radius: 0 6px 6px 0;
+            margin-bottom: 12px;
+        }
+        .speech-box .label {
+            font-weight: 700;
+            color: #1d4ed8;
+            font-size: 9.5pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .speech-box p {
+            margin: 0;
+            font-size: 10.5pt;
+            color: #1e3a8a;
+            font-style: normal;
+        }
+        .code-container {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 9pt;
+            line-height: 1.4;
+            margin-bottom: 12px;
+            overflow-x: auto;
+            border: 1px solid #334155;
+        }
+        .code-title {
+            color: #38bdf8;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 8.5pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .line-by-line {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px 14px;
+            font-size: 9.5pt;
+        }
+        .line-by-line .title {
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            font-size: 8.5pt;
+            letter-spacing: 0.5px;
+        }
+        .line-by-line ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+        .line-by-line li {
+            margin-bottom: 4px;
+            color: #334155;
+        }
+        .line-by-line li code {
+            background: #e2e8f0;
+            padding: 1px 5px;
+            border-radius: 3px;
+            color: #0f172a;
+            font-family: monospace;
+            font-size: 9pt;
+        }
+        .qa-card {
+            border-left: 4px solid #10b981;
+            background: #f0fdf4;
+            padding: 10px 14px;
+            border-radius: 0 6px 6px 0;
+            margin-bottom: 12px;
+            page-break-inside: avoid;
+        }
+        .qa-card .question {
+            font-weight: 700;
+            color: #065f46;
+            font-size: 10.5pt;
+            margin-bottom: 4px;
+        }
+        .qa-card .answer {
+            color: #047857;
+            font-size: 10pt;
+            margin: 0;
+        }
+        .page-break {
+            page-break-before: always;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PORTADA Y METADATOS -->
+    <div class="header">
+        <div class="subtitle">BDY1103 — Taller de Base de Datos | Duoc UC (Evaluación Parcial N° 1)</div>
+        <h1>Guía de Defensa Oral y Explicación de Código</h1>
+        <div class="meta-grid">
+            <div><strong>Proyecto:</strong> Sonido Vivo (Viña del Mar)</div>
+            <div><strong>Docente Evaluador:</strong> Josue Oteiza</div>
+            <div><strong>Integrantes:</strong> Dylan Sandoval, Victor Martinez, Danilo Sepúlveda</div>
+            <div><strong>Fecha:</strong> Septiembre 2026 | Rama: <code>main</code></div>
+        </div>
+    </div>
+
+    <!-- DIAPOSITIVA 1 -->
+    <div class="slide-card">
+        <div class="slide-header">
+            <h2>Diapositiva 1: Portada e Identificación</h2>
+            <span class="slide-badge">Apertura</span>
+        </div>
+        <div class="slide-body">
+            <div class="speech-box">
+                <div class="label">🎙️ Qué decir al empezar:</div>
+                <p>"Buenas tardes, profesor Josue Oteiza y compañeros. Junto a mi equipo conformado por Dylan Sandoval, Victor Martinez y Danilo Sepúlveda, venimos a presentar la solución que desarrollamos en base de datos para la tienda de instrumentos musicales 'Sonido Vivo', ubicada en Viña del Mar. Nuestro objetivo fue transformar la gestión manual de la tienda en un sistema seguro, ordenado y automático usando directamente el motor Oracle."</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIAPOSITIVA 2 -->
+    <div class="slide-card">
+        <div class="slide-header">
+            <h2>Diapositiva 2: Contexto de Negocio y Problemática</h2>
+            <span class="slide-badge">Criterio a</span>
+        </div>
+        <div class="slide-body">
+            <div class="speech-box">
+                <div class="label">🎙️ Qué decir:</div>
+                <p>"Sonido Vivo es una tienda que vende guitarras, teclados y equipos de audio en Viña del Mar. El problema que tenían es que llevaban las ventas y el inventario en cuadernos y planillas de cálculo. Esto generaba dos riesgos gravísimos: el primero, vender instrumentos que ya no estaban físicamente en bodega por no tener el stock al día; y el segundo, que no tenían cómo premiar a clientes frecuentes con descuentos automáticos. Con nuestra solución en Oracle PL/SQL, cada venta descuenta stock real al momento y los descuentos se calculan solos en memoria."</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIAPOSITIVA 3 -->
+    <div class="slide-card">
+        <div class="slide-header">
+            <h2>Diapositiva 3: Modelo Entidad-Relación y Reglas de Integridad</h2>
+            <span class="slide-badge">Script 01</span>
+        </div>
+        <div class="slide-body">
+            <div class="speech-box">
+                <div class="label">🎙️ Qué decir:</div>
+                <p>"Diseñamos la base de datos completamente normalizada para no duplicar datos: las categorías agrupan productos, los clientes realizan ventas y cada venta tiene sus líneas de detalle. Pero lo más importante de este modelo son los 'candados' que le pusimos a las tablas mediante restricciones CHECK: es imposible que un producto tenga precio o stock negativo, y ninguna boleta se guarda si el total no cuadra exactamente con la resta de subtotal menos descuento."</p>
+            </div>
+            <div class="code-container">
+                <div class="code-title">Código Demostrativo (01_esquema_y_datos.sql)</div>
+<pre>-- Candado matemático en VENTA
+CONSTRAINT chk_venta_totales CHECK (total = (subtotal - descuento))
+
+-- Candados físicos y de cálculo en DETALLE_VENTA
+CONSTRAINT chk_det_cant CHECK (cantidad > 0),
+CONSTRAINT chk_det_subtotal CHECK (subtotal_linea = cantidad * precio_unitario)</pre>
+            </div>
+            <div class="line-by-line">
+                <div class="title">Explicación Paso a Paso:</div>
+                <ul>
+                    <li><code>chk_venta_totales</code>: Obliga a nivel de motor a que el total sea matemáticamente exacto; cancela cualquier inserción errónea.</li>
+                    <li><code>chk_det_cant</code>: Prohíbe cantidades nulas o negativas (no podés comprar 0 o -1 instrumentos).</li>
+                    <li><code>chk_det_subtotal</code>: Valida que la multiplicación de cantidad por precio unitario sea exacta antes de escribir en disco.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- DIAPOSITIVA 4 -->
+    <div class="slide-card">
+        <div class="slide-header">
+            <h2>Diapositiva 4: Datos que Procesa el Sistema</h2>
+            <span class="slide-badge">Criterio b</span>
+        </div>
+        <div class="slide-body">
+            <div class="speech-box">
+                <div class="label">🎙️ Qué decir:</div>
+                <p>"Por un lado, el sistema se alimenta de los datos del día a día: los instrumentos del catálogo con sus precios y límites de stock crítico, los clientes registrados con su nivel de fidelidad y las boletas emitidas en caja. Y con estos insumos, nuestro motor procesa y genera información de negocio: calcula en memoria las tasas de descuento por volumen, consolida los balances finales en la tabla LIQUIDACION_CLIENTE y anota cualquier problema o fallo en la tabla LOG_ERRORES."</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIAPOSITIVA 5 -->
+    <div class="slide-card">
+        <div class="slide-header">
+            <h2>Diapositiva 5: Descuentos en Memoria con RECORD y VARRAY</h2>
+            <span class="slide-badge">Script 02 | Criterio c</span>
+        </div>
+        <div class="slide-body">
+            <div class="speech-box">
+                <div class="label">🎙️ Qué decir:</div>
+                <p>"Para liquidar las compras de los clientes sin poner lento el servidor, usamos dos herramientas en memoria: Primero, un RECORD, que funciona como una 'cajita' donde empaquetamos el nombre del cliente, su monto bruto, su porcentaje de descuento y su total neto, todo junto en una sola variable. Segundo, un VARRAY, que es una lista fija de 3 posiciones donde guardamos los descuentos del 0%, 5% y 10%. Al tener estos porcentajes a mano en la memoria rápida, evitamos hacer consultas a disco por cada cliente, haciendo que el proceso sea mucho más rápido."</p>
+            </div>
+            <div class="code-container">
+                <div class="code-title">Código Demostrativo (02_bloque_record_varray.sql)</div>
+<pre>TYPE t_rec_liquidacion IS RECORD (
+    id_cliente CLIENTE.id_cliente%TYPE, total_bruto NUMBER(10),
+    tasa_descuento_pct NUMBER(5,2), total_neto NUMBER(10)
+);
+TYPE t_arr_tasas IS VARRAY(3) OF NUMBER(5,2);
+v_escalas_descuento t_arr_tasas := t_arr_tasas(0.00, 5.00, 10.00);
+
+-- Acceso instantáneo en memoria
+IF v_liquidacion.total_bruto < 200000 THEN
+    v_liquidacion.tasa_descuento_pct := v_escalas_descuento(1); -- 0%
+ELSIF v_liquidacion.total_bruto BETWEEN 200000 AND 700000 THEN
+    v_liquidacion.tasa_descuento_pct := v_escalas_descuento(2); -- 5%
+ELSE
+    v_liquidacion.tasa_descuento_pct := v_escalas_descuento(3); -- 10%
+END IF;</pre>
+            </div>
+            <div class="line-by-line">
+                <div class="title">Explicación Paso a Paso:</div>
+                <ul>
+                    <li><code>RECORD</code>: Funciona como un DTO agrupando campos heterogéneos; el anclaje <code>%TYPE</code> evita discrepancias con la tabla.</li>
+                    <li><code>VARRAY(3)</code>: Colección de tamaño fijo indexada numéricamente; reside en la memoria PGA de la sesión.</li>
+                    <li><code>v_escalas_descuento(i)</code>: Recupera la tasa en microsegundos sin emitir consultas SQL a tablas de parámetros en disco.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIAPOSITIVA 6 -->
+    <div class="slide-card">
+        <div class="slide-header">
+            <h2>Diapositiva 6: Cursores Explícitos y Bucles Anidados</h2>
+            <span class="slide-badge">Script 03 | Criterio d</span>
+        </div>
+        <div class="slide-body">
+            <div class="speech-box">
+                <div class="label">🎙️ Qué decir:</div>
+                <p>"Para auditar el historial de compras de cada persona, usamos dos cursores que trabajan en equipo: El cursor padre recorre a los clientes que registran compras en el sistema. Y por cada cliente que encuentra, llama al cursor hijo, pasándole como parámetro el ID de ese cliente. Así, el cursor hijo va a la base de datos y busca únicamente las compras de esa persona. Con esto evitamos mezclar datos y podemos mostrar un reporte limpio con el detalle de cada boleta y el total gastado."</p>
+            </div>
+            <div class="code-container">
+                <div class="code-title">Código Demostrativo (03_bloque_cursores_anidados.sql)</div>
+<pre>-- Cursor Padre: Clientes con ventas activas
+CURSOR c_clientes IS
+    SELECT id_cliente, nombres || ' ' || apellidos AS cliente_nombre
+    FROM CLIENTE c WHERE EXISTS (SELECT 1 FROM VENTA v WHERE v.id_cliente = c.id_cliente);
+
+-- Cursor Hijo Parametrizado: Detalle de ese cliente específico
+CURSOR c_ventas_cliente (p_id_cli CLIENTE.id_cliente%TYPE) IS
+    SELECT v.nro_boleta, p.nombre, d.cantidad, d.subtotal_linea
+    FROM VENTA v JOIN DETALLE_VENTA d ON v.id_venta = d.id_venta
+    JOIN PRODUCTO p ON d.id_producto = p.id_producto
+    WHERE v.id_cliente = p_id_cli;</pre>
+            </div>
+            <div class="line-by-line">
+                <div class="title">Explicación Paso a Paso:</div>
+                <ul>
+                    <li><code>WHERE EXISTS</code>: Optimiza la búsqueda deteniéndose apenas confirma la primera compra en el índice.</li>
+                    <li><code>(p_id_cli ...)</code>: Parámetro formal que recibe el ID del cliente actual del bucle padre.</li>
+                    <li><code>WHERE v.id_cliente = p_id_cli</code>: El optimizador de Oracle filtra en la fuente usando índices, sin sobrecargar la memoria.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- DIAPOSITIVA 7 -->
+    <div class="slide-card">
+        <div class="slide-header">
+            <h2>Diapositiva 7: Control de Excepciones y Auditoría</h2>
+            <span class="slide-badge">Script 04 | Criterio e</span>
+        </div>
+        <div class="slide-body">
+            <div class="speech-box">
+                <div class="label">🎙️ Qué decir:</div>
+                <p>"El control de errores es el freno de mano que protege la base de datos. Controlamos dos tipos: Los errores de Oracle, como NO_DATA_FOUND si alguien ingresa un código de producto que no existe en la tienda. Y errores de negocio propios, como e_stock_insuficiente si un cliente pide comprar más guitarras de las que tenemos en bodega. Cuando salta un error, el sistema ejecuta un ROLLBACK para deshacer la venta a medias y guarda el incidente con fecha, hora y usuario en la tabla LOG_ERRORES, para que el administrador pueda revisarlo sin que el sistema se caiga."</p>
+            </div>
+            <div class="code-container">
+                <div class="code-title">Código Demostrativo (04_bloque_excepciones.sql)</div>
+<pre>IF v_cantidad_solicitada > v_stock_actual THEN
+    RAISE e_stock_insuficiente; -- Freno de mano
+END IF;
+...
+EXCEPTION
+    WHEN e_stock_insuficiente THEN
+        ROLLBACK; -- Deshace para no corromper la BD
+        INSERT INTO LOG_ERRORES (id_log, codigo_error, mensaje_error, usuario_bd, fecha_registro)
+        VALUES (SEQ_LOG_ERRORES.NEXTVAL, 'USR-001', 'Stock insuficiente para ' || v_nombre_prod, USER, SYSDATE);
+        COMMIT;</pre>
+            </div>
+            <div class="line-by-line">
+                <div class="title">Explicación Paso a Paso:</div>
+                <ul>
+                    <li><code>RAISE e_stock_insuficiente</code>: Interrumpe el flujo transaccional y salta a la sección EXCEPTION.</li>
+                    <li><code>ROLLBACK</code>: Garantiza consistencia ACID anulando operaciones intermedias fallidas.</li>
+                    <li><code>SEQ_LOG_ERRORES.NEXTVAL</code>: Genera una clave primaria correlativa atómica sin colisiones concurrentes.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIAPOSITIVA 8 -->
+    <div class="slide-card">
+        <div class="slide-header">
+            <h2>Diapositiva 8: Arquitectura Futura (Triggers y Paquetes Previstos)</h2>
+            <span class="slide-badge">Script 05 | Criterio f</span>
+        </div>
+        <div class="slide-body">
+            <div class="speech-box">
+                <div class="label">🎙️ Qué decir (Enfoque previsor e inteligente):</div>
+                <p>"Pensando en la siguiente etapa del proyecto y en cómo este motor se va a conectar con la página web de Fullstack II, la rúbrica nos pedía plantear la arquitectura futura. Nosotros no quisimos dejarlo solamente como una idea en el papel: ya dejamos prevista, diseñada y construida de antemano la lógica de los triggers en el script 05 del repositorio, dejándolos listos para cuando el negocio pase a producción: Primero, el trigger TRG_DESCUENTA_STOCK, para que al entrar una venta el stock en bodega baje automáticamente; y segundo, el trigger TRG_AUDITA_STOCK_CRITICO, que vigila la bodega y, si un producto queda en 3 unidades o menos, registra de inmediato una alerta en LOG_ERRORES. Además, están diseñados sobre tablas separadas para evitar el clásico error de tabla mutante (ORA-04091)."</p>
+            </div>
+            <div class="code-container">
+                <div class="code-title">Código Demostrativo (05_triggers_propuestos.sql)</div>
+<pre>-- Trigger 1 previsto: Rebaja automática al vender
+CREATE OR REPLACE TRIGGER TRG_DESCUENTA_STOCK
+AFTER INSERT ON DETALLE_VENTA
+FOR EACH ROW
+BEGIN
+    UPDATE PRODUCTO SET stock = stock - :NEW.cantidad WHERE id_producto = :NEW.id_producto;
+END;
+/
+
+-- Trigger 2 previsto: Alerta preventiva de bodega
+CREATE OR REPLACE TRIGGER TRG_AUDITA_STOCK_CRITICO
+AFTER UPDATE OF stock ON PRODUCTO FOR EACH ROW
+WHEN (NEW.stock <= NEW.stock_critico)
+BEGIN
+    INSERT INTO LOG_ERRORES (id_log, codigo_error, mensaje_error, usuario_bd, fecha_registro)
+    VALUES (SEQ_LOG_ERRORES.NEXTVAL, 'WARN-STOCK-CRITICO', 'ALERTA REPOSICIÓN: ' || :NEW.codigo, USER, SYSDATE);
+END;
+/</pre>
+            </div>
+            <div class="line-by-line">
+                <div class="title">Explicación Paso a Paso:</div>
+                <ul>
+                    <li><code>AFTER INSERT ON DETALLE_VENTA</code>: Descuenta el stock físico tras la confirmación de cada producto.</li>
+                    <li><code>WHEN (NEW.stock &lt;= NEW.stock_critico)</code>: Condición preventiva; solo alerta si el stock llega a nivel crítico.</li>
+                    <li><code>Seguridad ORA-04091</code>: DETALLE_VENTA modifica PRODUCTO; al ser tablas distintas, no hay riesgo de tabla mutante.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIAPOSITIVA 9 -->
+    <div class="slide-card">
+        <div class="slide-header">
+            <h2>Diapositiva 9: Conclusiones y Ronda de Preguntas</h2>
+            <span class="slide-badge">Cierre</span>
+        </div>
+        <div class="slide-body">
+            <div class="speech-box">
+                <div class="label">🎙️ Qué decir al cerrar:</div>
+                <p>"En conclusión, profesor: cumplimos al 100% con los bloques anónimos de liquidación, cursores y excepciones que pedía la evaluación, y además dejamos la evolución futura totalmente planificada, con los triggers ya preparados de antemano en el repositorio para cuando conectemos la base de datos con la plataforma web. Muchas gracias por su tiempo, quedamos atentos a sus preguntas."</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- SECCIÓN Q&A -->
+    <h2 style="color: #0f172a; border-bottom: 2px solid #10b981; padding-bottom: 6px; margin-top: 10px;">Banco de Preguntas Frecuentes del Docente (Q&A)</h2>
+
+    <div class="qa-card">
+        <div class="question">P1: ¿Por qué usaron un VARRAY y no una tabla anidada (Nested Table)?</div>
+        <p class="answer"><strong>Respuesta:</strong> "Elegimos VARRAY porque las escalas de descuento son una colección fija, acotada (3 tramos) y de orden estricto conocido de antemano. El VARRAY es más compacto y se aloja contiguamente en la memoria rápida (PGA)."</p>
+    </div>
+
+    <div class="qa-card">
+        <div class="question">P2: ¿Por qué parametrizar el cursor hijo y no hacer un solo JOIN masivo?</div>
+        <p class="answer"><strong>Respuesta:</strong> "Porque necesitábamos mostrar un reporte jerárquico ordenado por cliente. Parametrizar permite que el motor de Oracle filtre en cada vuelta usando el índice del cliente, manteniendo el uso de memoria bajo control."</p>
+    </div>
+
+    <div class="qa-card">
+        <div class="question">P3: En LIQUIDACION_CLIENTE guardan nombre_completo, ¿eso no viola la 3FN respecto a CLIENTE?</div>
+        <p class="answer"><strong>Respuesta:</strong> "Técnicamente sí, pero se aplica deliberadamente el patrón de <em>Snapshot Histórico (Cierre Contable)</em>: una liquidación es un balance inmutable en el tiempo. Si el cliente cambia su apellido en el futuro, no debemos alterar el balance contable histórico."</p>
+    </div>
+
+    <div class="qa-card">
+        <div class="question">P4: ¿Por qué usan secuencias (SEQUENCE) y no MAX(id) + 1?</div>
+        <p class="answer"><strong>Respuesta:</strong> "Porque MAX(id) + 1 falla si dos ventas ocurren al mismo tiempo (colisión de clave primaria). Las secuencias de Oracle entregan identificadores de forma atómica en memoria compartida sin bloqueos."</p>
+    </div>
+
+    <div class="qa-card">
+        <div class="question">P5: ¿Qué es una tabla mutante (ORA-04091) y cómo la previenen?</div>
+        <p class="answer"><strong>Respuesta:</strong> "Ocurre cuando un trigger intenta consultar o modificar la misma tabla que lo disparó. En nuestros triggers lo evitamos porque el trigger se dispara en DETALLE_VENTA y modifica la tabla externa PRODUCTO."</p>
+    </div>
+
+</body>
+</html>
