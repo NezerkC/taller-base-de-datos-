@@ -5,3 +5,6 @@
 .DS_Store
 Thumbs.db
 *.log
+
+# Agent configurations and skills
+.agents/
