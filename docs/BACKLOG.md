@@ -1,9 +1,9 @@
 # Product Backlog & Tablero Kanban
 
-## Proyecto: Sonido Vivo — Motor de Liquidación y Auditoría PL/SQL
+## Proyecto: Sonido Vivo — Motor de Liquidación, Paquetes y Triggers PL/SQL
 **Metodología:** Agile / Scrum  
-**Sprint:** Sprint 1 — Entrega y Defensa Evaluación Parcial N° 1  
-**Objetivo del Sprint:** Implementar el esquema relacional, los bloques anónimos PL/SQL requeridos por la rúbrica y generar los entregables formales (Informe Técnico y Diapositivas de Presentación).
+**Sprint Actual:** Sprint 2 — Arquitectura Modular PL/SQL (Packages, Triggers y Dashboard Local)  
+**Objetivo del Sprint:** Evolucionar la arquitectura de Sonido Vivo a subprogramas almacenados permanentes en base de datos (`PACKAGE`), implementar reglas de negocio automáticas (`TRIGGERS`) e integrar la capa de administración y monitoreo con un Dashboard Web Local para la Evaluación Parcial N° 2 (40%).
 
 ---
 
@@ -13,13 +13,13 @@
 +------------------------------------+-----------------------------+------------------------------------+
 |            TO DO (Por Hacer)       |       IN PROGRESS (En Curso)|          DONE (Finalizado)         |
 +------------------------------------+-----------------------------+------------------------------------+
-|                                    |                             | [SV-00] PRD & Requerimientos       |
-|                                    |                             | [SV-01] Modelo Relacional & DDL/DML|
-|                                    |                             | [SV-02] Bloque RECORD & VARRAY     |
-|                                    |                             | [SV-03] Cursores Parametrizados    |
+| [SV-08] Triggers Fila & Sentencia  | [SV-07] Package PKG_SONIDO_ | [SV-00] PRD & Requerimientos       |
+| [SV-09] Dashboard Local Monitoreo  |         VIVO (Spec & Body)  | [SV-01] Modelo Relacional & DDL/DML|
+| [SV-10] Informe Técnico Formal EP2 |                             | [SV-02] Bloque RECORD & VARRAY     |
+| [SV-11] Presentación Oral EP2      |                             | [SV-03] Cursores Parametrizados    |
 |                                    |                             | [SV-04] Control de Excepciones     |
-|                                    |                             | [SV-05] Informe Técnico Formal     |
-|                                    |                             | [SV-06] Guión y Presentación Oral  |
+|                                    |                             | [SV-05] Informe Técnico Formal EP1 |
+|                                    |                             | [SV-06] Guión y Presentación EP1   |
 +------------------------------------+-----------------------------+------------------------------------+
 ```
 
@@ -100,5 +100,83 @@
 - **Criterios de Aceptación:**
   1. Estructura diapositiva por diapositiva (Problema, Datos, RECORD/VARRAY, Cursores, Excepciones, Paquetes/Triggers, Conclusión).
   2. Guión con argumentos técnicos clave para justificar el porqué de cada decisión técnica.
+- **Estimación:** 5 Story Points  
+- **Prioridad:** Crítica  
+
+---
+
+### ÉPICA 4: Modularización Empresarial con Packages (Rúbrica EP2 - IL2.1 & IL2.2)
+#### Historia de Usuario: `[SV-07]` Construcción e Integración de PKG_SONIDO_VIVO
+- **Como:** Arquitecto de Base de Datos.
+- **Quiero:** Un paquete modular con especificación (`PACKAGE`) y cuerpo (`PACKAGE BODY`) que agrupe funciones de cálculo y procedimientos de procesamiento masivo.
+- **Para:** Encapsular la lógica de negocio, optimizar el rendimiento en el servidor y permitir su reutilización en sentencias SQL y aplicaciones externas.
+- **Criterios de Aceptación:**
+  1. **Especificación pública:**
+     - Declaración de constantes de negocio (ej. IVA, tasas base).
+     - Función `fn_calcular_descuento`: calcula el descuento aplicable según tipo de cliente y monto.
+     - Función `fn_validar_email`: valida la consistencia sintáctica de correos electrónicos de clientes.
+     - Procedimiento `sp_liquidar_clientes`: procesa y registra masivamente la liquidación de clientes.
+     - Procedimiento `sp_reajustar_precios`: actualiza los precios del catálogo según un porcentaje recibido como parámetro.
+  2. **Cuerpo e implementación privada:**
+     - Implementar todos los subprogramas públicos.
+     - Implementar un subprograma privado auxiliar (`sp_log_error_interno`) para registrar anomalías directamente en `LOG_ERRORES` sin exponerlo al consumidor externo.
+- **Estimación:** 8 Story Points  
+- **Prioridad:** Bloqueante / Alta  
+
+---
+
+### ÉPICA 5: Reglas de Integridad y Auditoría Automática con Triggers (Rúbrica EP2 - IL2.3)
+#### Historia de Usuario: `[SV-08]` Implementación de Triggers de Sentencia y Fila
+- **Como:** Administrador de Seguridad e Inventario.
+- **Quiero:** Disparadores que respondan a eventos DML (`INSERT`, `UPDATE`, `DELETE`) en tablas clave.
+- **Para:** Garantizar la consistencia transaccional del stock y auditar variaciones de precios sin intervención manual.
+- **Criterios de Aceptación:**
+  1. **Trigger de fila en ventas (`TRG_CONTROL_STOCK_VENTA`):**
+     - Disparo: `BEFORE INSERT ON DETALLE_VENTA FOR EACH ROW`.
+     - Validar que el stock disponible en `PRODUCTO` cubra `:NEW.cantidad`.
+     - Si es insuficiente, abortar la transacción con `RAISE_APPLICATION_ERROR(-20001, ...)`.
+     - Si es suficiente, descontar automáticamente las unidades de `PRODUCTO`.
+  2. **Trigger de fila de auditoría de precios (`TRG_AUDIT_PRECIO_PRODUCTO`):**
+     - Disparo: `AFTER UPDATE OF precio ON PRODUCTO FOR EACH ROW`.
+     - Registrar en la tabla `HISTORIAL_PRECIO_PRODUCTO`: ID del producto, precio anterior (`:OLD.precio`), precio nuevo (`:NEW.precio`), usuario y fecha.
+  3. **Trigger de sentencia (`TRG_AUDIT_VENTAS_SENTENCIA`):**
+     - Disparo: `AFTER INSERT OR UPDATE OR DELETE ON VENTA`.
+     - Registrar en `AUDITORIA_OPERACIONES_VENTA` el tipo de operación DML, cantidad global y timestamp.
+- **Estimación:** 8 Story Points  
+- **Prioridad:** Alta  
+
+---
+
+### ÉPICA 6: Integración y Capa de Presentación con Dashboard Local (Rúbrica EP2 - IL2.4)
+#### Historia de Usuario: `[SV-09]` Interfaz Interactiva y Enlace con Subprogramas PL/SQL
+- **Como:** Administrador Comercial y de Operaciones de Sonido Vivo.
+- **Quiero:** Un panel web local interactivo que visualice tablas y registre la ejecución de subprogramas.
+- **Para:** Monitorear el catálogo, consultar clientes, disparar reajustes de precios y visualizar la consola de auditoría de triggers sin depender de la nube de APEX.
+- **Criterios de Aceptación:**
+  1. Módulo de catálogo y clientes con opción de validación sintáctica mediante `PKG_SONIDO_VIVO.fn_validar_email`.
+  2. Módulo de simulación de reajuste de precios que invoque conceptualmente `PKG_SONIDO_VIVO.sp_reajustar_precios`.
+  3. Consola de auditoría en vivo que muestre los registros insertados en `AUDIT_PRECIOS_PRODUCTO` y las excepciones capturadas en `LOG_ERRORES`.
+  4. Módulo de liquidación que muestre las ejecuciones de `sp_liquidar_clientes`.
+- **Estimación:** 8 Story Points  
+- **Prioridad:** Alta  
+
+---
+
+### ÉPICA 7: Documentación Formal y Defensa de Código EP2 (Ponderación 40%)
+#### Historia de Usuario: `[SV-10]` Informe Técnico de Arquitectura Avanzada PL/SQL
+- **Como:** Estudiante evaluado en BDY1103.
+- **Quiero:** Un informe técnico estructurado con justificaciones arquitectónicas de packages y triggers.
+- **Para:** Cumplir con la pauta de la Evaluación Parcial 2.
+- **Criterios de Aceptación:**
+  1. Justificación de la arquitectura modular (especificación vs cuerpo, constructores públicos vs privados).
+  2. Análisis de triggers a nivel de sentencia versus fila, evitando tablas mutantes (ORA-04091).
+  3. Evidencias de ejecución y capturas de integración en Oracle APEX.
+- **Estimación:** 5 Story Points  
+- **Prioridad:** Crítica  
+
+#### Historia de Usuario: `[SV-11]` Soporte para Presentación Ejecutiva y Defensa Oral EP2
+- **Como:** Estudiante defendiendo el proyecto.
+- **Quiero:** Guión técnico de defensa oral y diapositivas ejecutivas (máximo 10 slides).
+- **Para:** Responder con precisión a las preguntas del docente durante la presentación de 20 minutos.
 - **Estimación:** 5 Story Points  
 - **Prioridad:** Crítica  
