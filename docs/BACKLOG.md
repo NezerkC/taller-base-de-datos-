@@ -2,8 +2,8 @@
 
 ## Proyecto: Sonido Vivo — Motor de Liquidación, Paquetes y Triggers PL/SQL
 **Metodología:** Agile / Scrum  
-**Sprint Actual:** Sprint 2 — Arquitectura Modular PL/SQL (Packages, Triggers y Oracle APEX)  
-**Objetivo del Sprint:** Evolucionar la arquitectura de Sonido Vivo a subprogramas almacenados permanentes en base de datos (`PACKAGE`), implementar reglas de negocio automáticas (`TRIGGERS`) e integrar la capa de presentación con Oracle APEX para la Evaluación Parcial N° 2 (40%).
+**Sprint Actual:** Sprint 2 — Arquitectura Modular PL/SQL (Packages, Triggers y Dashboard Local)  
+**Objetivo del Sprint:** Evolucionar la arquitectura de Sonido Vivo a subprogramas almacenados permanentes en base de datos (`PACKAGE`), implementar reglas de negocio automáticas (`TRIGGERS`) e integrar la capa de administración y monitoreo con un Dashboard Web Local para la Evaluación Parcial N° 2 (40%).
 
 ---
 
@@ -14,7 +14,7 @@
 |            TO DO (Por Hacer)       |       IN PROGRESS (En Curso)|          DONE (Finalizado)         |
 +------------------------------------+-----------------------------+------------------------------------+
 | [SV-08] Triggers Fila & Sentencia  | [SV-07] Package PKG_SONIDO_ | [SV-00] PRD & Requerimientos       |
-| [SV-09] Integración Oracle APEX    |         VIVO (Spec & Body)  | [SV-01] Modelo Relacional & DDL/DML|
+| [SV-09] Dashboard Local Monitoreo  |         VIVO (Spec & Body)  | [SV-01] Modelo Relacional & DDL/DML|
 | [SV-10] Informe Técnico Formal EP2 |                             | [SV-02] Bloque RECORD & VARRAY     |
 | [SV-11] Presentación Oral EP2      |                             | [SV-03] Cursores Parametrizados    |
 |                                    |                             | [SV-04] Control de Excepciones     |
@@ -147,16 +147,16 @@
 
 ---
 
-### ÉPICA 6: Integración y Capa de Presentación con Oracle APEX (Rúbrica EP2 - IL2.4)
+### ÉPICA 6: Integración y Capa de Presentación con Dashboard Local (Rúbrica EP2 - IL2.4)
 #### Historia de Usuario: `[SV-09]` Interfaz Interactiva y Enlace con Subprogramas PL/SQL
-- **Como:** Administrador Comercial de Sonido Vivo.
-- **Quiero:** Una aplicación web en Oracle APEX con reportes y formularios interactivos.
-- **Para:** Visualizar el catálogo, administrar clientes y ejecutar procesos de cálculo desde una interfaz web.
+- **Como:** Administrador Comercial y de Operaciones de Sonido Vivo.
+- **Quiero:** Un panel web local interactivo que visualice tablas y registre la ejecución de subprogramas.
+- **Para:** Monitorear el catálogo, consultar clientes, disparar reajustes de precios y visualizar la consola de auditoría de triggers sin depender de la nube de APEX.
 - **Criterios de Aceptación:**
-  1. Reporte interactivo con formulario para la tabla `CLIENTE` con validación que invoque `PKG_SONIDO_VIVO.fn_validar_email`.
-  2. Reporte interactivo con formulario para la tabla `PRODUCTO`.
-  3. Página de procesamiento con formulario donde se ingrese un porcentaje y un botón "Procesar" que ejecute `PKG_SONIDO_VIVO.sp_reajustar_precios`.
-  4. Visualización de registros de auditoría generados por los disparadores.
+  1. Módulo de catálogo y clientes con opción de validación sintáctica mediante `PKG_SONIDO_VIVO.fn_validar_email`.
+  2. Módulo de simulación de reajuste de precios que invoque conceptualmente `PKG_SONIDO_VIVO.sp_reajustar_precios`.
+  3. Consola de auditoría en vivo que muestre los registros insertados en `AUDIT_PRECIOS_PRODUCTO` y las excepciones capturadas en `LOG_ERRORES`.
+  4. Módulo de liquidación que muestre las ejecuciones de `sp_liquidar_clientes`.
 - **Estimación:** 8 Story Points  
 - **Prioridad:** Alta  
 
