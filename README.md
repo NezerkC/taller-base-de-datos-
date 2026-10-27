@@ -29,6 +29,7 @@ taller-base-de-datos/
 │   ├── PRD.md                         <- Requerimientos de producto y modelo relacional
 │   ├── GUIA_DESARROLLADORES.md        <- Manual de inicio rapido y flujo de desarrollo
 │   ├── ARQUITECTURA_PLSQL.md          <- Diseno tecnico (Packages, Triggers, ORA-04091)
+│   ├── CASOS_NEGOCIO_ADICIONALES_PROPUESTOS.md <- Reglas de negocio desacopladas
 │   └── estudio/                       <- Dossier teorico-practico y banco de preguntas EP2
 │       ├── 00 - Indice Material de Estudio Unidad 2.md
 │       ├── 01 - Matriz de Transicion de Unidad 1 a Unidad 2.md
@@ -37,28 +38,41 @@ taller-base-de-datos/
 │       └── 04 - Guia Rapida y Banco de Preguntas para Defensa EP2.md
 │
 ├── prueba parcial 1/                  <- Evaluacion Parcial 1 (EP1 - Finalizada)
-│   ├── docs/                          <- Informes tecnicos, presentaciones y pautas
-│   │   ├── BDY1103 Evaluación Parcial 1...pdf     <- Pauta oficial del encargo EP1
+│   ├── docs/                          <- Documentacion tecnica fuente (Markdown)
 │   │   ├── INFORME_TECNICO_EP1.md                 <- Informe academico formal (Markdown)
-│   │   ├── Informe_EvaluacionParcial1...docx      <- Informe formateado para entrega (.docx)
 │   │   ├── PRESENTACION_EJECUTIVA_EP1.md          <- Estructura de diapositivas para la defensa
-│   │   ├── Presentacion_EP1...pptx                <- Presentacion visual (.pptx)
-│   │   ├── Guia_Defensa_SonidoVivo_EP1.*          <- Banco de preguntas y respuestas orales
-│   │   └── EXPLICACION_BLOQUES_CODIGO.md          <- Desglose tecnico de cada bloque PL/SQL
-│   └── scripts/                                   <- Scripts y bloques anonimos ejecutables
+│   │   ├── EXPLICACION_BLOQUES_CODIGO.md          <- Desglose tecnico de cada bloque PL/SQL
+│   │   ├── pauta/                                 <- Documentos oficiales Duoc UC
+│   │   │   └── BDY1103_Evaluacion_Parcial_1_EE_EP_Estudiante.pdf
+│   │   └── entregables/                           <- Archivos finales compilados (Word, PDF, PPTX, HTML)
+│   │       ├── Informe_EvaluacionParcial1_BDY1103_SonidoVivo.docx
+│   │       ├── Presentacion_EP1_BDY1103_SonidoVivo.pptx
+│   │       ├── Guia_Defensa_SonidoVivo_EP1.pdf
+│   │       ├── Guia_Defensa_SonidoVivo_EP1.docx
+│   │       ├── Guia_Defensa_SonidoVivo_EP1.html
+│   │       └── Explicacion_Paso_a_Paso_Bloques_PLSQL.docx
+│   └── scripts/                                   <- Scripts y bloques PL/SQL ejecutables
 │       ├── 01_esquema_y_datos.sql                 <- DDL (tablas/secuencias) y DML (datos iniciales)
 │       ├── 02_bloque_record_varray.sql            <- Bloque anonimo con RECORD y VARRAY (IE1.1.1)
 │       ├── 03_bloque_cursores_anidados.sql        <- Bloque anonimo con cursores anidados (IE1.2.1)
 │       ├── 04_bloque_excepciones.sql              <- Control de excepciones Oracle y usuario (IE1.3.1)
 │       ├── 05_triggers_propuestos.sql             <- Disparadores base preliminares
-│       ├── parcial_1.sql                          <- Script unificado de entrega EP1
 │       ├── sonido_vivo_completo.sql               <- Script maestro de instalacion total EP1
-│       └── generate_*.py                          <- Utilidades para compilacion de informes
+│       ├── tools/                                 <- Generadores Python de reportes y documentacion
+│       │   ├── generate_code_blocks_doc.py
+│       │   ├── generate_pdf_guide.py
+│       │   └── generate_word_guide.py
+│       └── archivados/                            <- Versiones preliminares y borradores historicos
+│           └── parcial_1.sql                      <- Borrador inicial previo a modularizacion
 │
 └── prueba parcial 2/                  <- Evaluacion Parcial 2 (EP2 - En Desarrollo)
+    ├── docs/                                      <- Pautas, informe tecnico formal y rubrica EP2
+    │   ├── INFORME_EVALUACION_PARCIAL_2.md
+    │   └── GUIA_DEFENSA_PRESENTACION_EP2.md
     ├── scripts/                                   <- Packages modulares, suite de triggers y pruebas
-    ├── dashboard/                                 <- Panel web local de administracion y monitoreo
-    └── docs/                                      <- Pautas, informe tecnico formal y rubrica EP2
+    │   └── 01_paquetes_y_triggers_ep2.sql
+    └── dashboard/                                 <- Panel web local de administracion y monitoreo
+        └── .gitkeep
 ```
 
 ---

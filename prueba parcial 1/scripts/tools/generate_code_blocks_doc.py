@@ -454,7 +454,7 @@ END;
     add_breakdown_table(doc, rows_b4)
     
     # Guardar
-    output_path = "docs/Explicacion_Paso_a_Paso_Bloques_PLSQL.docx"
+    output_path = "docs/entregables/Explicacion_Paso_a_Paso_Bloques_PLSQL.docx"
     doc.save(output_path)
     print(f"Documento generado exitosamente en: {output_path}")
 

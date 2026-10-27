@@ -17,7 +17,7 @@ from reportlab.platypus import (
 )
 
 
-def create_pdf(filename="docs/Guia_Defensa_SonidoVivo_EP1.pdf"):
+def create_pdf(filename="docs/entregables/Guia_Defensa_SonidoVivo_EP1.pdf"):
   doc = SimpleDocTemplate(
       filename,
       pagesize=letter,

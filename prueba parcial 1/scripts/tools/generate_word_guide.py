@@ -35,7 +35,7 @@ def set_cell_left_border(cell, hex_color="2563EB", sz="36"):
     ''')
     tcPr.append(tcBorders)
 
-def create_word(filename="docs/Guia_Defensa_SonidoVivo_EP1.docx"):
+def create_word(filename="docs/entregables/Guia_Defensa_SonidoVivo_EP1.docx"):
     doc = docx.Document()
     
     # Configurar márgenes de página
