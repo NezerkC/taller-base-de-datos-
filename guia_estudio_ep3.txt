@@ -1,0 +1,148 @@
+=== PAGINA 1 ===
+Notas para defensa oral
+EP3 BDY1103 — Guía de estudio (Modelo No Relacional en MongoDB)
+Guía de estudio de la EP3 (caso Sonido Vivo). Cada concepto y decisión técnica se explica con
+la misma estructura que en las entregas anteriores: qué es -> cómo se comporta -> un ejemplo
+sencillo con los datos reales de la tienda -> por qué lo usamos.
+Al final hay un banco de preguntas trampa del docente y un guion sugerido de 9 diapositivas
+para la presentación ejecutiva.
+
+No hace falta memorizarlo palabra por palabra: basta dominar la secuencia de cuatro partes y
+los códigos reales del caso (GA001..AC002, PED-2026-5001..5005). En cada respuesta conviene
+preguntarse "¿estoy explicando el POR QUÉ desde el negocio de Sonido Vivo o solo el QUÉ?"
+
+=== PAGINA 2 ===
+Resumen del proyecto NoSQL (script ep3_sonido_vivo.js)
+Qué construimos:
+Una base de datos documental en MongoDB 7.x llamada sonido_vivo que convive con Oracle 19c
+bajo una arquitectura de Persistencia Políglota.
+
+Colección / Objeto          Estrategia          Detalle
+productos                   Polimórfico         10 instrumentos oficiales (GA001 a AC002) con subdocumento
+                                                variable 'especificaciones' y arreglo 'etiquetas'.
+pedidos                     Embebido            5 pedidos (PED-2026-5001 a 5005) con 'cliente' e 'items'
+                                                incrustados para lectura atómica e inmutabilidad histórica.
+resenas_clientes            Referenciado        6 reseñas de clientes vinculadas por 'codigo_producto' para
+                                                evitar crecimiento ilimitado (Unbounded Growth > 16 MB).
+$jsonSchema                 Gobernanza          Validadores estrictos en las 3 colecciones (validationAction:
+                                                "error") que bloquean documentos corruptos (ej. BAD01).
+6 Índices                   Rendimiento         Únicos (codigo, codigo_pedido), compuesto (categoria+precio),
+                                                Dot Notation (cliente.rut), multikey (etiquetas) y reseñas.
+
+=== PAGINA 3 ===
+SQL vs NoSQL, Teorema CAP y Persistencia Políglota (IE3.1.1 / IE3.1.2)
+Qué es. Las bases relacionales (Oracle) guardan datos en tablas rígidas normalizadas (3FN) con
+esquema previo (Schema-on-Write) y transacciones ACID estrictas. Las NoSQL documentales (MongoDB)
+guardan documentos BSON jerárquicos con esquema flexible (Schema-on-Read) optimizados para
+escalado horizontal (Sharding) y lecturas rápidas sin JOINs.
+Cómo se comporta. Ante una partición de red (Teorema CAP), todo sistema distribuido elige entre
+Consistencia (C) o Disponibilidad (A). Un Replica Set de MongoDB es CP por defecto: si un nodo
+secundario queda aislado sin mayoría, rechaza escrituras para impedir datos divergentes.
+Ejemplo sencillo. En Sonido Vivo, la liquidación fiscal y las tablas CLIENTE/VENTA/LOG_ERRORES
+siguen en Oracle porque exigen ACID estricto (COMMIT/ROLLBACK). En cambio, una guitarra eléctrica
+GE001 tiene trastes y pastillas, mientras un micrófono AP001 tiene patrón polar e impedancia:
+en SQL obligarían a columnas nulas; en MongoDB viven juntos en la colección productos sin nulls.
+Por qué lo usamos. Porque no forzamos un único motor para problemas opuestos (Persistencia
+Políglota): Oracle cuida la plata y el cumplimiento contable; MongoDB da velocidad al catálogo web,
+pedidos e historial de reseñas.
+
+Si preguntan: ¿MongoDB reemplaza a Oracle en Sonido Vivo?
+No. Conviven. Oracle administra el core financiero y las liquidaciones del paquete PKG_SONIDO_VIVO;
+MongoDB maneja el catálogo polimórfico, las órdenes web embebidas y las reseñas.
+
+Si preguntan: ¿Qué significa BSON y cuál es su límite físico?
+Binary JSON: formato binario de MongoDB que soporta tipos estrictos como ObjectId, Date, Int32
+(NumberInt) y Decimal128 (NumberDecimal). Cada documento BSON tiene un límite máximo de 16 MB.
+
+=== PAGINA 4 ===
+Modelado Documental: Embebido vs Referenciado (IE3.2.1 / IE3.2.2)
+Qué es. En MongoDB no se modela normalizando tablas sino según cómo lee la aplicación. Existen
+dos patrones: embeber (guardar hijos como subdocumentos o arreglos dentro del padre) y referenciar
+(guardar solo una clave en otra colección).
+Cómo se comporta. Lo embebido se lee completo en un solo acceso a disco (I/O) sin JOIN. Lo
+referenciado se mantiene separado y solo se cruza cuando hace falta mediante $lookup.
+Ejemplo sencillo. En PED-2026-5001 (Carlos Valenzuela, total 864.980 CLP) embebimos la lista
+'items' con la guitarra GE001 (749.990 CLP) y el micrófono AP001 (114.990 CLP). Si mañana GE001
+sube a 800.000 CLP en el catálogo, la boleta ya emitida sigue mostrando 749.990 CLP. En cambio,
+las reseñas van en resenas_clientes apuntando a 'codigo_producto', porque un instrumento famoso
+podría recibir miles de comentarios y reventar el límite de 16 MB (Unbounded Growth).
+Por qué lo usamos. Embebemos pedidos por lectura atómica e inmutabilidad histórica de precios;
+referenciamos reseñas para evitar documentos gigantes que degraden la RAM del motor WiredTiger.
+
+Si preguntan: Si MongoDB es flexible, ¿cómo evitan datos basura o precios negativos?
+Con validadores $jsonSchema al crear cada colección (validationLevel: "strict", validationAction:
+"error"). En nuestra Fase 6 probamos insertar BAD01 con categoría inexistente, precio -5000 y
+stock -1, y MongoDB rechazó el documento antes de guardarlo.
+
+=== PAGINA 5 ===
+Operaciones CRUD Atómicas y Arreglos (IE3.3.1 / IE3.3.2)
+Qué es. Son las operaciones Create, Read, Update y Delete ejecutadas directamente sobre el motor
+en mongosh usando operadores atómicos y notación de punto (Dot Notation).
+Cómo se comporta. Toda actualización sobre un único documento en MongoDB es atómica a nivel de
+motor. En consultas sobre arreglos, un filtro simple evalúa condiciones por separado; $elemMatch
+obliga a que todas las condiciones se cumplan dentro del mismo elemento del arreglo.
+Ejemplo sencillo.
+- Read (Dot Notation): buscar {"especificaciones.trastes": 22} o {"especificaciones.patron_polar":
+  "Cardioide"} devuelve exactamente 3 productos: GE001, GE002 y AP001.
+- Read ($elemMatch): buscar items con cantidad >= 2 y subtotal >= 20.000 CLP devuelve 2 pedidos:
+  PED-2026-5002 (3 cuerdas AC001 = 26.970) y PED-2026-5004 (2 baquetas AC002 = 25.980).
+- Update ($inc con guarda): updateOne({codigo: "AP001", stock: {$gte: 2}}, {$inc: {stock: -2}})
+  baja el stock del SM58 de 12 a 10 sin condición de carrera (race condition).
+- Update ($addToSet vs $push): $addToSet agrega "alta-demanda" a GE001 solo si no existe (sin
+  duplicados); $push agrega un nuevo ítem de 2 cuerdas AC001 (17.980) a PED-2026-5004 y $inc
+  sube el total de 155.970 a 173.950 CLP.
+- Delete: deleteOne elimina el producto temporal TE002 y deleteMany borra el pedido CANCELADO
+  PED-2026-9999.
+Por qué lo usamos. Leer el stock en el backend, restar en código y hacer $set provoca sobreventa
+si dos clientes compran al mismo tiempo. Con filtro de guarda + $inc, el motor resuelve la resta
+en una sola operación atómica.
+
+Si preguntan: ¿Qué diferencia hay entre COLLSCAN e IXSCAN?
+COLLSCAN significa que MongoDB recorrió toda la colección documento por documento (lento). IXSCAN
+significa que usó uno de nuestros 6 índices en memoria (ej. idx_prod_codigo o el índice multikey
+idx_prod_etiquetas_multikey) para ir directo a los documentos coincidentes.
+
+=== PAGINA 6 ===
+Aggregation Pipeline (Analítica de Negocio)
+Qué es. Una tubería secuencial de etapas donde la salida de una etapa alimenta a la siguiente,
+equivalente funcional a GROUP BY, WHERE, JOIN y proyecciones analíticas en SQL.
+Cómo se comporta.
+- $match: filtra documentos al inicio (aprovechando índices) para procesar menos datos.
+- $unwind: desenrolla un arreglo de N elementos en N documentos individuales.
+- $group: agrupa por clave (_id) y calcula acumuladores ($sum, $avg, $first).
+- $lookup: realiza un Left Outer Join documental entre dos colecciones.
+- $project y $sort: da forma a los campos de salida (ej. $round) y ordena el ranking.
+Ejemplo sencillo.
+- Pipeline 1 (Facturación): toma pedidos COMPLETADO y PAGADO ($match), desenrolla 'items'
+  ($unwind), agrupa por código de producto ($group) y ordena de mayor a menor ($sort). Resultado
+  verificado: 6 productos facturados por 2.351.920 CLP totales (1° BA001 con 799.990 CLP,
+  2° GE001 con 749.990 CLP).
+- Pipeline 2 (Calificaciones): cruza 'productos' con 'resenas_clientes' vía $lookup por
+  codigo_producto, desenrolla las reseñas y calcula el promedio con $avg y $round. Resultado
+  verificado: 5 productos evaluados (GE002, AP001 y AP002 con 5.0 estrellas; GE001 con 4.5;
+  TE001 con 4.0).
+Por qué lo usamos. Permite generar métricas ejecutivas directamente en la base de datos en tiempo
+real sin extraer miles de documentos hacia la aplicación cliente.
+
+=== PAGINA 7 ===
+Guion sugerido para la presentación ejecutiva (9 diapositivas)
+1. Portada: Evaluación Parcial 3 BDY1103 — Sonido Vivo da el salto a la Persistencia Políglota
+   incorporando MongoDB 7.x junto a Oracle 19c.
+2. El Problema en el Catálogo y Pedidos Web: Un teclado tiene polifonía y teclas; una guitarra
+   tiene maderas y trastes. En tablas SQL esto genera rigidez o columnas nulas, y reconstruir un
+   pedido requiere varios JOINs.
+3. SQL vs NoSQL y Teorema CAP: Comparativa concreta (Schema-on-Write vs Schema-on-Read, ACID vs
+   BASE). MongoDB como sistema CP ante particiones de red, conviviendo con Oracle para lo contable.
+4. Por qué Base Documental (MongoDB): Descarte técnico de Clave-Valor, Columnar y Grafos frente a
+   las necesidades de consulta polimórfica y analítica de Sonido Vivo.
+5. Arquitectura del Modelo No Relacional: Las 3 colecciones (productos polimórfico, pedidos
+   embebido por lectura atómica e inmutabilidad, resenas_clientes referenciado por límite 16 MB).
+6. Gobernanza y Rendimiento ($jsonSchema + 6 Índices): Cómo aseguramos calidad de datos sin perder
+   flexibilidad, y cómo evitamos COLLSCAN usando índices únicos, compuestos y multikey.
+7. Demostración CRUD Atómico: Ejemplos reales ejecutados: Dot Notation, $elemMatch evitando falsos
+   positivos, descuento atómico de stock con $inc + guarda en AP001 (12 -> 10) y prueba de rechazo
+   sobre BAD01.
+8. Analítica con Aggregation Pipeline: Resultados reales de facturación consolidada (2.351.920 CLP)
+   y ranking de reseñas cruzado vía $lookup.
+9. Conclusión: Sonido Vivo logra un ecosistema híbrido moderno: rigor contable en Oracle y velocidad,
+   flexibilidad y escalabilidad horizontal en MongoDB.
