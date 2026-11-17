@@ -1,0 +1,260 @@
+=========================================================================
+  VERIFICACION DETERMINISTA EP3 BDY1103 - SONIDO VIVO (MONGODB 7.x)
+=========================================================================
+[OK] Sintaxis JavaScript validada con Node.js (C:\Program Files\nodejs\node.EXE)
+[OK] Estructura completa verificada: FASE 1 a FASE 7 presentes.
+[INFO] Sentencias mongosh extraidas y parseadas: 30
+[FASE 1] Colección 'productos' creada con validador $jsonSchema.
+[FASE 1] Colección 'pedidos' creada con validador $jsonSchema.
+[FASE 1] Colección 'resenas_clientes' creada con validador $jsonSchema.
+[FASE 1] Índice 'idx_prod_codigo' creado en 'productos'.
+[FASE 1] Índice 'idx_prod_cat_precio' creado en 'productos'.
+[FASE 1] Índice 'idx_prod_etiquetas_multikey' creado en 'productos'.
+[FASE 1] Índice 'idx_ped_codigo' creado en 'pedidos'.
+[FASE 1] Índice 'idx_ped_cliente_fecha' creado en 'pedidos'.
+[FASE 1] Índice 'idx_res_producto' creado en 'resenas_clientes'.
+[FASE 2] insertMany en 'productos': 10 documentos insertados.
+[FASE 2] insertMany en 'pedidos': 5 documentos insertados.
+[FASE 2] insertMany en 'resenas_clientes': 6 documentos insertados.
+[CREATE] insertOne en 'productos': código='TE002'.
+
+[READ #1] db.productos.find(...) -> 3 documento(s):
+[
+  {
+    "codigo": "GE001",
+    "nombre": "Guitarra Eléctrica Player Stratocaster",
+    "categoria": "Guitarras Eléctricas",
+    "especificaciones": {
+      "trastes": 22
+    }
+  },
+  {
+    "codigo": "GE002",
+    "nombre": "Guitarra Eléctrica Les Paul Tribute",
+    "categoria": "Guitarras Eléctricas",
+    "especificaciones": {
+      "trastes": 22
+    }
+  },
+  {
+    "codigo": "AP001",
+    "nombre": "Micrófono Dinámico Vocal SM58",
+    "categoria": "Audio Profesional",
+    "especificaciones": {
+      "patron_polar": "Cardioide"
+    }
+  }
+]
+
+[READ #2] db.productos.find(...) -> 3 documento(s):
+[
+  {
+    "codigo": "GE002",
+    "nombre": "Guitarra Eléctrica Les Paul Tribute",
+    "categoria": "Guitarras Eléctricas",
+    "precio": "NumberDecimal('1199990')"
+  },
+  {
+    "codigo": "GE001",
+    "nombre": "Guitarra Eléctrica Player Stratocaster",
+    "categoria": "Guitarras Eléctricas",
+    "precio": "NumberDecimal('749990')"
+  },
+  {
+    "codigo": "AP002",
+    "nombre": "Interfaz de Audio Scarlett 2i2 4th Gen",
+    "categoria": "Audio Profesional",
+    "precio": "NumberDecimal('199990')"
+  }
+]
+
+[READ #3] db.pedidos.find(...) -> 2 documento(s):
+[
+  {
+    "codigo_pedido": "PED-2026-5002",
+    "cliente": {
+      "nombre": "Carlos Valenzuela Pinto"
+    },
+    "items": [
+      {
+        "codigo": "AC001",
+        "nombre": "Cuerdas Guitarra Eléctrica 010-046",
+        "cantidad": 3,
+        "precio_unitario": "NumberDecimal('8990')",
+        "subtotal": "NumberDecimal('26970')"
+      }
+    ],
+    "total": "NumberDecimal('26970')"
+  },
+  {
+    "codigo_pedido": "PED-2026-5004",
+    "cliente": {
+      "nombre": "Matías Lagos Herrera"
+    },
+    "items": [
+      {
+        "codigo": "GA001",
+        "nombre": "Guitarra Acústica Folk F310",
+        "cantidad": 1,
+        "precio_unitario": "NumberDecimal('129990')",
+        "subtotal": "NumberDecimal('129990')"
+      },
+      {
+        "codigo": "AC002",
+        "nombre": "Baquetas American Classic 5A Madera",
+        "cantidad": 2,
+        "precio_unitario": "NumberDecimal('12990')",
+        "subtotal": "NumberDecimal('25980')"
+      }
+    ],
+    "total": "NumberDecimal('155970')"
+  }
+]
+
+[READ #4] db.productos.find(...) -> 5 documento(s):
+[
+  {
+    "codigo": "GA002",
+    "nombre": "Guitarra Acústica Dreadnought CD-60S",
+    "etiquetas": [
+      "fender",
+      "acustica",
+      "dreadnought",
+      "tapa-maciza"
+    ]
+  },
+  {
+    "codigo": "GE001",
+    "nombre": "Guitarra Eléctrica Player Stratocaster",
+    "etiquetas": [
+      "fender",
+      "stratocaster",
+      "electrica",
+      "hss"
+    ]
+  },
+  {
+    "codigo": "BA001",
+    "nombre": "Bajo Eléctrico Player Precision Bass",
+    "etiquetas": [
+      "fender",
+      "bajo",
+      "precision",
+      "4-cuerdas"
+    ]
+  },
+  {
+    "codigo": "AP001",
+    "nombre": "Micrófono Dinámico Vocal SM58",
+    "etiquetas": [
+      "shure",
+      "microfono",
+      "escenario",
+      "estudio"
+    ]
+  },
+  {
+    "codigo": "AP002",
+    "nombre": "Interfaz de Audio Scarlett 2i2 4th Gen",
+    "etiquetas": [
+      "focusrite",
+      "interfaz",
+      "grabacion",
+      "estudio"
+    ]
+  }
+]
+[UPDATE] productos.updateOne -> matched=1, modified=1
+[UPDATE] productos.updateOne -> matched=1, modified=1
+[UPDATE] pedidos.updateOne -> matched=1, modified=1
+[UPDATE] productos.updateMany -> matched=2, modified=2
+[DELETE] productos.deleteOne -> deletedCount=1
+[CREATE] insertOne en 'pedidos': código='PED-2026-9999'.
+[DELETE] pedidos.deleteMany -> deletedCount=1
+[FASE 6 OK] Validador $jsonSchema rechazó documento inválido en 'productos': Campo '$.codigo'='BAD01' no cumple patrón /^[A-Z]{2}[0-9]{3}$/
+
+[AGGREGATE #1] db.pedidos.aggregate(...) -> 6 fila(s):
+[
+  {
+    "_id": "BA001",
+    "nombre_producto": "Bajo Eléctrico Player Precision Bass",
+    "unidades_vendidas": 1,
+    "ingresos_acumulados": "NumberDecimal('799990')"
+  },
+  {
+    "_id": "GE001",
+    "nombre_producto": "Guitarra Eléctrica Player Stratocaster",
+    "unidades_vendidas": 1,
+    "ingresos_acumulados": "NumberDecimal('749990')"
+  },
+  {
+    "_id": "TE001",
+    "nombre_producto": "Piano Digital P-45B 88 Teclas",
+    "unidades_vendidas": 1,
+    "ingresos_acumulados": "NumberDecimal('459990')"
+  },
+  {
+    "_id": "AP002",
+    "nombre_producto": "Interfaz de Audio Scarlett 2i2 4th Gen",
+    "unidades_vendidas": 1,
+    "ingresos_acumulados": "NumberDecimal('199990')"
+  },
+  {
+    "_id": "AP001",
+    "nombre_producto": "Micrófono Dinámico Vocal SM58",
+    "unidades_vendidas": 1,
+    "ingresos_acumulados": "NumberDecimal('114990')"
+  },
+  {
+    "_id": "AC001",
+    "nombre_producto": "Cuerdas Guitarra Eléctrica 010-046",
+    "unidades_vendidas": 3,
+    "ingresos_acumulados": "NumberDecimal('26970')"
+  }
+]
+
+[AGGREGATE #2] db.productos.aggregate(...) -> 5 fila(s):
+[
+  {
+    "codigo": "GE002",
+    "nombre": "Guitarra Eléctrica Les Paul Tribute",
+    "total_resenas": 1,
+    "calificacion_promedio": 5.0
+  },
+  {
+    "codigo": "AP001",
+    "nombre": "Micrófono Dinámico Vocal SM58",
+    "total_resenas": 1,
+    "calificacion_promedio": 5.0
+  },
+  {
+    "codigo": "AP002",
+    "nombre": "Interfaz de Audio Scarlett 2i2 4th Gen",
+    "total_resenas": 1,
+    "calificacion_promedio": 5.0
+  },
+  {
+    "codigo": "GE001",
+    "nombre": "Guitarra Eléctrica Player Stratocaster",
+    "total_resenas": 2,
+    "calificacion_promedio": 4.5
+  },
+  {
+    "codigo": "TE001",
+    "nombre": "Piano Digital P-45B 88 Teclas",
+    "total_resenas": 1,
+    "calificacion_promedio": 4.0
+  }
+]
+
+=========================================================================
+  RESUMEN DE CHECKS DE VERIFICACION
+=========================================================================
+[OK] CHK-01: Sintaxis JS válida y 7 fases completas
+[OK] CHK-02: 3 colecciones con $jsonSchema y 6 índices creados
+[OK] CHK-03: Estado final tras CRUD: 10 productos, 5 pedidos, 6 reseñas
+[OK] CHK-04: Consultas READ (Dot Notation=3, Compuesta=3, $elemMatch=2, Multikey=5)
+[OK] CHK-05: Updates atómicos ($inc stock 12->10, $addToSet, $push+$inc total 173950, updateMany)
+[OK] CHK-06: Eliminaciones deleteOne (TE002) y deleteMany (CANCELADO)
+[OK] CHK-07: Prueba negativa $jsonSchema rechazó documento corrupto BAD01
+[OK] CHK-08: Aggregation Pipelines (Ranking 6 productos = 2.351.920 CLP; Lookup 5 reseñas)
