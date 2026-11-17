@@ -1,0 +1,289 @@
+=== PAGINA 1 ===
+Notas para defensa oral
+EP2 BDY1103 — Guía de estudio
+Guía de estudio de la EP2 (caso Sonido Vivo). Cada objeto se explica con la misma estructura
+que en la EP1: qué es → cómo se comporta → un ejemplo sencillo → por qué lo usamos.
+Al final hay un guion sugerido para la presentación.
+No hace falta memorizarlo palabra por palabra: basta con el orden de las cuatro partes y
+los datos del ejemplo. En cada respuesta conviene preguntarse "¿estoy dando el POR
+QUÉ o solo el QUÉ?"
+Objetos del trabajo
+Qué es un objeto:
+todo lo que se crea con CREATE y queda guardado en la base con un nombre: tablas,
+secuencias, procedimientos, funciones, packages y triggers. A diferencia de un bloque
+anónimo, queda guardado y se puede reutilizar.
+El script crea 7 objetos: 2 procedimientos, 2 funciones, 1 package y 2 triggers.
+Tipo Objeto Detalle
+Procedimiento SP_LIQUIDAR_CLIENTES Sin parámetros. Liquida a todos los clientes 
+con ventas pendientes.
+Procedimiento SP_REGISTRAR_VENTA Con parámetros (cliente, producto, cantidad). 
+Tiene un subprograma local: 
+registrar_error.
+Función FN_CALCULAR_DESCUENTO Con parámetros (total, tipo de cliente). 
+Devuelve la tasa de descuento.
+Función FN_TOTAL_PENDIENTE Sin parámetros. Devuelve el total de las ventas 
+pendientes.
+Package PKG_SONIDO_VIVO Agrupa operaciones de inventario y clientes 
+(detalle abajo).
+Trigger TRG_DESCUENTA_STOCK De fila, BEFORE INSERT ON 
+DETALLE_VENTA.
+Trigger TRG_AUDITA_VENTA De sentencia, AFTER 
+INSERT/UPDATE/DELETE ON VENTA.
+
+=== PAGINA 2 ===
+Dentro del package:
+Públicos (especificación) Privados (solo 
+body)
+Funciones fn_stock_producto fn_existe_producto
+Procedimientos sp_reponer_stock, sp_resumen_cliente, 
+sp_mostrar_criticos
+sp_registrar_log
+Constantes c_nombre_tienda c_max_reposicion
+Procedimientos (IE2.1.2)
+Qué es. Un procedimiento es un proceso guardado en la base con nombre: ejecuta una serie
+de pasos, como insertar, actualizar y confirmar.
+Cómo se comporta. No devuelve un valor: se ejecuta con EXEC o se llama desde otro
+programa. Puede recibir parámetros o no.
+Ejemplo sencillo. SP_LIQUIDAR_CLIENTES no recibe nada: al ejecutarlo recorre a los clientes
+con ventas pendientes, le pide a la función el descuento de cada uno y guarda la liquidación;
+liquidó a 4 clientes. SP_REGISTRAR_VENTA recibe cliente, producto y cantidad: una venta de 2
+unidades de AC002 se registra y el stock baja de 20 a 18; una de 5 unidades de GE002, que
+tiene 2, se rechaza y el error queda anotado.
+Por qué lo usamos. Porque son procesos de la tienda: el cierre del periodo y la venta del
+mostrador. Guardados como procedimientos, se ejecutan siempre igual, con validaciones, y si
+algo falla la venta no queda a medias. Son procedimientos y no funciones porque ejecutan una
+tarea; no calculan un valor para devolver.
+Para complementar:
+SP_REGISTRAR_VENTA sigue este orden: valida la cantidad → busca el cliente y el producto
+→ calcula el total → inserta la venta (dispara TRG_AUDITA_VENTA) → inserta el detalle
+(dispara TRG_DESCUENTA_STOCK) → COMMIT.
+Si algo falla, registrar_error hace ROLLBACK, para que no quede una venta a medias,
+y guarda el error en LOG_ERRORES.
+PRAGMA EXCEPTION_INIT(e_sin_stock, -20001) le pone nombre al error que lanza el
+trigger de stock, para que el procedimiento lo atrape por nombre.
+Si un procedimiento necesitara entregar un resultado, lo haría con parámetros OUT, no con
+RETURN.
+
+=== PAGINA 3 ===
+Funciones (IE2.1.4)
+Qué es. Una función es un programa guardado que recibe datos y devuelve un valor. Es como
+ROUND o NVL, pero escrita con la regla de la tienda.
+Cómo se comporta. Siempre termina con RETURN y, como devuelve un valor, se puede usar
+dentro de un SELECT o de otro programa. Llamada desde un SELECT no puede modificar
+tablas: solo calcula.
+Ejemplo sencillo. FN_CALCULAR_DESCUENTO recibe el total comprado y el tipo de cliente.
+Carlos compró 891.950 y es PREMIUM: pasa los 700.000, así que le toca 10 %, y por ser
+Si preguntan: ¿Por qué la liquidación no es una función?  
+Porque no devuelve un valor: hace un proceso completo que modifica tablas.
+Si preguntan: ¿Por qué SP_REGISTRAR_VENTA no descuenta el stock?  
+Porque lo descuenta el trigger al insertar el detalle. Si lo hicieran los dos, se descontaría
+dos veces.
+Si preguntan: ¿Un procedimiento se puede usar dentro de un SELECT?  
+No. Solo las funciones, porque devuelven un valor. Los procedimientos se ejecutan con
+EXEC o se llaman desde otros programas PL/SQL.
+Si preguntan: ¿Qué diferencia hay entre los dos procedimientos?  
+SP_LIQUIDAR_CLIENTES no tiene parámetros y hace un proceso masivo (todos los
+clientes de una vez). SP_REGISTRAR_VENTA recibe parámetros y procesa una venta
+concreta.
+Si preguntan: ¿Qué pasa si el cliente o el producto no existe?  
+El SELECT INTO lanza NO_DATA_FOUND. La variable v_paso indica cuál faltó, y
+registrar_error hace ROLLBACK y lo anota en LOG_ERRORES.
+
+=== PAGINA 4 ===
+PREMIUM suma 2: devuelve 12. FN_TOTAL_PENDIENTE no recibe nada y devuelve el total de
+las ventas pendientes: 2.507.890.
+Por qué lo usamos. Porque la política de descuentos queda escrita en un solo lugar. En la
+EP1 estaba dentro del bloque de liquidación y solo servía ahí; ahora la usan la liquidación y el
+resumen de cliente, y el mismo cliente recibe el mismo descuento en todos lados. Si la tienda
+cambia los tramos, se corrige una vez.
+Para complementar:
+Lo que la hace función son dos líneas: RETURN NUMBER en la cabecera (avisa qué tipo
+devuelve) y RETURN v_tasa al final (lo entrega).
+FN_CALCULAR_DESCUENTO se usa en tres lugares: en un SELECT, en
+SP_LIQUIDAR_CLIENTES y en sp_resumen_cliente del package.
+En la EP1 el VARRAY solo guardaba las tasas 0, 5 y 10; la decisión del tramo estaba en los
+IF dentro del bloque. La función pone la tasa directo en cada tramo y ya no necesita el
+VARRAY.
+Una función no solo calcula: también puede consultar ( FN_TOTAL_PENDIENTE,
+fn_stock_producto) o validar (fn_existe_producto, que devuelve TRUE o FALSE).
+Como SQL no acepta BOOLEAN, esta última solo se usa dentro de PL/SQL.
+Si preguntan: ¿Una función puede ir en un SELECT y un procedimiento no?  
+Sí, porque la función devuelve un valor. Pero esa es la consecuencia: la diferencia de
+fondo es devolver un valor o ejecutar una tarea.
+Si preguntan: ¿Qué pasa si la función hace un UPDATE?  
+Si se llama desde un SELECT, Oracle da error (ORA-14551). Por eso las funciones del
+trabajo solo calculan o consultan.
+Si preguntan: ¿Por qué FN_CALCULAR_DESCUENTO es función y
+SP_LIQUIDAR_CLIENTES es procedimiento?
+La función devuelve un valor (la tasa) que se usa en un SELECT y en otros programas. El
+procedimiento ejecuta un proceso completo (liquidar a todos) y no devuelve un valor.
+
+=== PAGINA 5 ===
+Package (IE2.2.2)
+Qué es. Un package agrupa funciones y procedimientos relacionados bajo un solo nombre,
+como un módulo de la tienda.
+Cómo se comporta. Tiene dos partes. La especificación es lo público: lo que otros programas
+pueden llamar. El body tiene el código, y lo que está en el body pero no en la especificación es
+privado: solo lo usa el package por dentro. Se llama con el nombre del package, punto y el
+elemento.
+Ejemplo sencillo. PKG_SONIDO_VIVO.sp_reponer_stock('GE002', 10) es público y suma 10
+unidades. Por dentro usa elementos privados: revisa que el producto exista, que la cantidad no
+pase el tope de 100 y anota los errores. Si se llama desde fuera a sp_registrar_log, que es
+privado, Oracle responde PLS-00302: no lo encuentra.
+Por qué lo usamos. Porque deja juntas las operaciones de inventario y clientes, y esconde lo
+de mantención. Así se puede cambiar cómo se registran los errores sin afectar a quien usa el
+package. Privado no es seguridad: es ordenar lo que se ve desde afuera.
+Para complementar:
+Son dos objetos con el mismo nombre: PACKAGE (la especificación) y PACKAGE BODY (el
+código).
+Los privados son sp_registrar_log, fn_existe_producto y c_max_reposicion (tope
+de 100 unidades por reposición).
+sp_registrar_log usa PRAGMA AUTONOMOUS_TRANSACTION: guarda el error en una
+transacción aparte, así queda registrado aunque lo demás se deshaga.
+Si preguntan: ¿Lo privado protege la tabla LOG_ERRORES?  
+No. La tabla sigue accesible; lo privado es encapsulación, no seguridad.
+Si preguntan: ¿Dónde está el código de lo público?  
+También en el body. La especificación solo tiene las firmas.
+Si preguntan: ¿Qué ventaja tiene el package frente a dejar los objetos
+sueltos?
+
+=== PAGINA 6 ===
+Triggers (IE2.3.2)
+Qué es. Un trigger es un bloque asociado a una tabla que Oracle ejecuta solo cuando se
+inserta, actualiza o borra en ella. Nadie lo llama.
+Cómo se comporta. Hay dos tipos. El de fila se ejecuta una vez por cada fila afectada y puede
+leer los datos de esa fila con :NEW. El de sentencia se ejecuta una sola vez por operación, sin
+importar cuántas filas.
+Ejemplo sencillo. Al vender 2 unidades de AC002 se inserta una línea en DETALLE_VENTA, y
+TRG_DESCUENTA_STOCK, que es de fila, revisa el stock y lo baja de 20 a 18. Si piden 5 de
+GE002 y hay 2, rechaza la línea con el error -20001. Y cada vez que se registra una venta,
+TRG_AUDITA_VENTA, que es de sentencia, anota una fila en la tabla de auditoría.
+Por qué lo usamos. Porque la regla de no vender lo que no hay en bodega tiene que
+cumplirse siempre, venga de donde venga el cambio; un procedimiento solo protege a quien lo
+usa. El de stock es de fila porque depende de cuántas unidades lleva cada línea; la auditoría
+basta anotarla una vez por operación.
+Para complementar:
+Ordena todo lo de un área bajo un nombre, esconde lo interno (encapsulación) y permite
+cambiar el body sin afectar a quien usa la especificación.
+Lo único que decide si un trigger es de fila o de sentencia es la línea FOR EACH ROW.
+TRG_DESCUENTA_STOCK es BEFORE: revisa antes de guardar la línea, y si lanza el error, la
+línea no se inserta.
+Solo el trigger descuenta stock; el procedimiento no, para no descontar dos veces.
+TRG_AUDITA_VENTA usa INSERTING y UPDATING para saber qué operación fue (INSERT,
+UPDATE o DELETE).
+Si preguntan: Si inserto 3 líneas de una vez, ¿cuántas veces corre cada uno?  
+El de fila 3 veces, el de sentencia 1.
+Si preguntan: ¿Hay riesgo de tabla mutante?  
+
+=== PAGINA 7 ===
+Cómo trabajan juntos: una venta sin stock
+Una venta que falla muestra cómo trabajan juntos: se piden 5 unidades de GE002, que tiene 2.
+El procedimiento valida y registra la venta, y el trigger de sentencia la audita. Al insertar el
+detalle, el trigger de fila ve que no alcanza y lanza el error. El procedimiento lo atrapa, deshace
+todo con ROLLBACK y guarda el error en LOG_ERRORES. Resultado: no hay venta, el stock
+no cambió y el error quedó registrado.
+Comparaciones clave
+Son las comparaciones que conectan los objetos y se pueden preguntar de cualquier forma.
+No: el trigger está en DETALLE_VENTA y lee y modifica PRODUCTO, otra tabla.
+Si preguntan: ¿Para qué está el FOR UPDATE en TRG_DESCUENTA_STOCK?  
+Bloquea la fila del producto mientras el trigger revisa y descuenta el stock, para que dos
+ventas al mismo tiempo no lean el mismo stock y lo dejen en negativo.
+Si preguntan: ¿Por qué el trigger de stock es BEFORE y no AFTER?  
+Porque tiene que revisar el stock antes de guardar la línea. Si no alcanza, lanza el error y
+la línea nunca se inserta.
+Si preguntan: ¿Qué es :NEW y por qué el trigger de sentencia no lo usa?  
+:NEW son los datos de la fila que se está insertando. El de sentencia corre una vez por
+operación, no por fila, así que no hay una fila a la que referirse.
+Si preguntan: ¿Qué pasa con la fila de auditoría cuando la venta falla?  
+El ROLLBACK también la deshace, junto con la venta. Solo queda el error en
+LOG_ERRORES, porque registrar_error lo guarda después del ROLLBACK.
+
+=== PAGINA 8 ===
+Función vs procedimiento. La función devuelve un valor con RETURN; el procedimiento
+ejecuta una tarea. Que la función vaya en un SELECT es la consecuencia, no la diferencia de
+fondo. Un procedimiento puede entregar datos por parámetros OUT, pero no devuelve un valor
+como parte de una expresión.
+Público vs privado. Público es lo que está en la especificación y se puede llamar desde fuera.
+Privado es lo que solo está en el body y lo usa únicamente el package. Privado no es
+seguridad: es encapsulación. Además, el código de lo público también está en el body; la
+especificación solo tiene las firmas.
+Fila vs sentencia. El de fila ( FOR EACH ROW) corre una vez por cada fila y lee :NEW; el de
+sentencia corre una vez por operación y no tiene :NEW. Con una sola fila no se nota la
+diferencia: con 3 filas, el de fila corre 3 veces y el de sentencia 1.
+Técnico vs negocio. Lo técnico es la mecánica ("hace un UPDATE"); el negocio es la
+necesidad de la tienda que lo justifica ("no se vende lo que no hay en bodega"). Se parte por la
+tienda y se cierra con lo técnico. Plantilla:
+"En Sonido Vivo, [situación de la tienda]. La regla es [qué se decidió]. Por eso se creó
+[el objeto], que [qué hace], para que [beneficio para la tienda]."
+Cómo se relacionan los objetos
+Los objetos se conectan de dos formas: uno llama a otro, o un INSERT dispara un trigger.
+SP_LIQUIDAR_CLIENTES ──llama──> FN_CALCULAR_DESCUENTO <──llama──
+PKG.sp_resumen_cliente
+SP_REGISTRAR_VENTA
+├─ INSERT en VENTA ─────────dispara──> TRG_AUDITA_VENTA (anota en
+AUDITORIA_OPERACION)
+├─ INSERT en DETALLE_VENTA ─dispara──> TRG_DESCUENTA_STOCK (descuenta o
+lanza -20001)
+└─ atrapa el -20001 como e_sin_stock ──> registrar_error ──> LOG_ERRORES
+PKG.sp_reponer_stock ──usa──> c_max_reposicion, fn_existe_producto,
+sp_registrar_log (privados)
+└─usa──> fn_stock_producto (público, para mostrar el
+stock nuevo)
+1
+2
+3
+4
+5
+6
+7
+8
+9
+1. FN_CALCULAR_DESCUENTO es el centro: la usan SP_LIQUIDAR_CLIENTES y
+sp_resumen_cliente. Es la regla escrita una sola vez.
+
+=== PAGINA 9 ===
+Puntos débiles (si preguntan)
+Guion sugerido para la presentación (posible salvavidas)
+Ideas centrales para decir en cada diapositiva. Es una sugerencia: lo importante es transmitir la
+idea, no repetir el texto.
+Portada. Presentamos el caso Sonido Vivo: llevamos su lógica de negocio a objetos
+guardados en Oracle.
+El caso. Sonido Vivo es una tienda de instrumentos con dos reglas clave: dar descuento según
+lo que compra cada cliente y no vender lo que no hay en bodega. Si esas reglas están
+repartidas en distintos programas, cada uno puede aplicarlas distinto; por eso las llevamos a la
+base de datos con cuatro tipos de objetos: los procedimientos ejecutan procesos, las funciones
+calculan, el package agrupa y los triggers reaccionan solos.
+De la EP1 a la EP2. En la EP1 la lógica estaba en bloques anónimos: se ejecutan una vez y no
+quedan guardados. La liquidación, por ejemplo, era un solo bloque con la regla del descuento
+metida dentro del LOOP. En la EP2 esa lógica se convirtió en objetos con nombre, guardados y
+compilados en la base, que se ejecutan cuando se necesitan: el bloque de la liquidación pasó a
+ser SP_LIQUIDAR_CLIENTES, y el de la venta, SP_REGISTRAR_VENTA.
+2. SP_REGISTRAR_VENTA activa los dos triggers sin llamarlos: sus INSERT los disparan.
+Además atrapa el error del trigger de stock.
+3. Dentro del package, lo público usa lo privado: sp_reponer_stock usa los tres
+elementos privados.
+4. Objetos independientes: FN_TOTAL_PENDIENTE y sp_mostrar_criticos no los llama
+ningún otro objeto. Son consultas que se usan por sí solas.
+Dos caminos de log: los errores llegan a LOG_ERRORES desde registrar_error (en
+SP_REGISTRAR_VENTA) y desde sp_registrar_log (en el package). Mejora: que el
+procedimiento use el log del package.
+La liquidación se recalcula completa: SP_LIQUIDAR_CLIENTES borra
+LIQUIDACION_CLIENTE y no marca las ventas como liquidadas, para poder repetir la
+prueba. En un sistema real se marcarían como LIQUIDADA.
+El package no incluye los procedimientos y funciones principales: quedaron como
+objetos independientes. Se podrían mover adentro para agruparlo todo.
+
+=== PAGINA 10 ===
+Procedimientos. Son los procesos de la tienda: el cierre del periodo y la venta del mostrador.
+Ejecutan una tarea completa y no devuelven un valor; por eso son procedimientos.
+Funciones. Es la política de descuentos escrita una sola vez: devuelve la tasa, la usan la
+liquidación y el resumen de cliente, y si cambian los tramos se corrige en un solo lugar.
+Package. Agrupa las operaciones de inventario y clientes: muestra lo público y esconde lo
+interno, que se puede cambiar sin afectar a quien lo usa.
+Triggers. Hacen cumplir las reglas solos: el de fila no deja vender lo que no hay en bodega y el
+de sentencia lleva el registro de cada venta.
+Todo junto. En una venta sin stock, el procedimiento registra la venta, el trigger rechaza la
+línea y el procedimiento deshace todo y anota el error.
+Conclusión. La lógica de Sonido Vivo ahora vive en la base de datos: reutilizable, controlada y
+auditable.
+

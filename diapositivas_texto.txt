@@ -1,0 +1,135 @@
+Total diapositivas: 9
+
+=== ppt/slides/slide1.xml ===
+  - BDY1103 · TALLER DE BASE DE DATOS · EVALUACIÓN PARCIAL 2
+  - Sonido Vivo: la lógica del negocio dentro de Oracle
+  - Funciones, procedimientos, package y triggers en PL/SQL
+  - Dylan Sandoval · Víctor Martínez · Danilo Sepúlveda — DUOC UC — Octubre 2026
+
+=== ppt/slides/slide2.xml ===
+  - EL CASO
+  - Sonido Vivo, en pocas palabras
+  - •  Tienda de instrumentos que liquida a sus clientes con descuento y controla su stock.
+  - •  Sin reglas centralizadas, el descuento y el stock se calculan distinto en cada programa.
+  - •  Solución: llevar esas reglas a la base de datos.
+  - Procedimientos
+  - ejecutan
+  - Funciones
+  - calculan
+  - Package
+  - agrupa
+  - Triggers
+  - reaccionan
+
+=== ppt/slides/slide3.xml ===
+  - PROCEDIMIENTOS
+  - Una receta guardada que hace algo
+  - QUÉ ES
+  - •  Hace una acción: insertar, actualizar.
+  - •  No devuelve un valor.
+  - •  Se llama con EXEC.
+  - EN MI TRABAJO
+  - SP_LIQUIDAR_CLIENTES
+  - Sin parámetros: liquida a todos.
+  - SP_REGISTRAR_VENTA
+  - Con parámetros: registra una venta.
+  - POR QUÉ LO USO
+  - •  Procesos completos que modifican datos.
+  - •  Una llamada procesa a muchos.
+  - •  Reutilizan la función del descuento.
+  - En una frase: son los procesos completos del negocio.
+
+=== ppt/slides/slide4.xml ===
+  - FUNCIONES
+  - Una calculadora guardada que devuelve un resultado
+  - QUÉ ES
+  - •  Recibe datos y devuelve un valor con RETURN.
+  - •  Se usa dentro de un SELECT.
+  - •  Y en otros programas PL/SQL.
+  - EN MI TRABAJO
+  - FN_CALCULAR_DESCUENTO
+  - Con parámetros: devuelve la tasa.
+  - FN_TOTAL_PENDIENTE
+  - Sin parámetros: suma pendientes.
+  - POR QUÉ LO USO
+  - •  La regla se escribe una sola vez.
+  - •  Se reutiliza en SQL y procedimientos.
+  - •  Desde un SELECT no modifica datos.
+  - SELECT FN_CALCULAR_DESCUENTO(891950, 'PREMIUM') FROM DUAL;  →  12
+
+=== ppt/slides/slide5.xml ===
+  - PACKAGE · PKG_SONIDO_VIVO
+  - Una caja con tapa: lo público se ve, lo privado no
+  - QUÉ ES
+  - •  Agrupa funciones y procedimientos.
+  - •  Especificación: lo público.
+  - •  Body: implementación y lo privado.
+  - EN MI TRABAJO
+  - Público
+  - fn_stock_producto, sp_reponer_stock,
+  - sp_resumen_cliente, sp_mostrar_criticos
+  - Privado
+  - sp_registrar_log, fn_existe_producto
+  - POR QUÉ LO USO
+  - •  Un solo nombre para stock y clientes.
+  - •  Lo privado es apoyo interno: lo puedo
+  - cambiar sin afectar a quien lo usa.
+  - Prueba: llamar sp_registrar_log desde fuera falla con PLS-00302.
+
+=== ppt/slides/slide6.xml ===
+  - TRIGGERS
+  - Una alarma que se dispara sola
+  - Salta ante un INSERT, UPDATE o DELETE en una tabla; nadie la llama.
+  - DE FILA
+  - Insertas 3 filas → salta 3 veces
+  - TRG_DESCUENTA_STOCK
+  - Sobre DETALLE_VENTA. Por cada línea revisa el stock: si alcanza lo descuenta; si no, rechaza con el error -20001.
+  - DE SENTENCIA
+  - Insertas 3 filas → salta 1 vez
+  - TRG_AUDITA_VENTA
+  - Sobre VENTA. Anota una vez cada INSERT, UPDATE o DELETE en AUDITORIA_OPERACION.
+  - Por qué así: el stock depende de cada línea (fila); para auditar basta saber que hubo una operación (sentencia).
+  - Solo el trigger descuenta stock, para no descontarlo dos veces.
+
+=== ppt/slides/slide7.xml ===
+  - TODO JUNTO
+  - Una venta sin stock, paso a paso
+  - El procedimiento valida cantidad, cliente y producto.
+  - Inserta la venta. El trigger de sentencia deja auditoría.
+  - Inserta el detalle. El trigger de fila revisa el stock.
+  - Hay 2 y se piden 5: el trigger lanza el error -20001.
+  - ROLLBACK: la venta y la auditoría se deshacen.
+  - Se guarda el error en LOG_ERRORES. El stock no cambia.
+
+=== ppt/slides/slide8.xml ===
+  - DEMOSTRACIÓN
+  - Lo que se ejecutó y lo que respondió
+  - {5C22544A-7EE6-4342-B048-85BDC9FD1C3A}
+  - Prueba
+  - Resultado
+  - Función con parámetros
+  - Tasas 12, 5, 0 y 12
+  - Función sin parámetros
+  - Total pendiente: 2.507.890
+  - Liquidación masiva
+  - 4 clientes liquidados
+  - Venta correcta (2 × AC002)
+  - Venta 1006; stock de 20 a 18
+  - Venta sin stock (5 × GE002)
+  - Rechazada y registrada en LOG_ERRORES
+  - Cantidad 0
+  - Rechazada y registrada en LOG_ERRORES
+  - Elemento privado del package
+  - Error PLS-00302
+  - Trigger de sentencia
+  - Una fila INSERT en AUDITORIA_OPERACION
+
+=== ppt/slides/slide9.xml ===
+  - CONCLUSIÓN
+  - La lógica ahora vive en la base de datos
+  - Las funciones centralizan la regla del descuento.
+  - Los procedimientos ejecutan los procesos completos.
+  - El package ordena y esconde lo interno.
+  - Los triggers hacen cumplir el stock y la auditoría.
+  - El resultado es una lógica reutilizable, controlada y auditable.
+
