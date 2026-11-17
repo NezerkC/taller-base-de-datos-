@@ -1,0 +1,174 @@
+================================================================================
+BDY1103 · TALLER DE BASE DE DATOS · EVALUACIÓN PARCIAL 3 (PRESENTACIÓN EJECUTIVA)
+ESTRUCTURA COMPLETA DE 9 DIAPOSITIVAS + GUION DE EXPOSICIÓN (3 INTEGRANTES)
+Caso: Sonido Vivo — Modelo No Relacional en MongoDB (Persistencia Políglota)
+================================================================================
+
+DISTRIBUCIÓN DE EXPOSICIÓN POR INTEGRANTE (60% DE LA NOTA FINAL)
+- Bloque 1 — Diapositivas 1 a 3 (IE3.1.2 - 20%): Contexto, SQL vs NoSQL, CAP/PACELC y Persistencia Políglota.
+- Bloque 2 — Diapositivas 4 a 6 (IE3.2.2 - 20%): Elección Documental, Embebido vs Referenciado, $jsonSchema e Índices.
+- Bloque 3 — Diapositivas 7 a 9 (IE3.3.2 - 20%): CRUD Atómico, Aggregation Pipelines, Resultados y Conclusiones.
+
+================================================================================
+BLOQUE 1 · FUNDAMENTOS Y ARQUITECTURA POLÍGLOTA (IE3.1.2 — 20%)
+================================================================================
+
+=== Diapositiva 1 · Portada ===
+Título:      Sonido Vivo: Arquitectura NoSQL Documental en MongoDB
+Subtítulo:   BDY1103 · Taller de Base de Datos · Evaluación Parcial 3 (30%)
+Integrantes: Dylan Sandoval – Víctor Martínez – Danilo Sepúlveda · DUOC UC
+Pie visual:  Del núcleo transaccional Oracle 19c a la Persistencia Políglota
+
+[Qué decir]:
+Presentamos la tercera entrega de Sonido Vivo: no reemplazamos Oracle de las EP1/EP2,
+sino que incorporamos MongoDB 7.x para resolver los datos heterogéneos y pedidos web.
+
+--------------------------------------------------------------------------------
+
+=== Diapositiva 2 · El Problema y los Datos a Procesar ===
+Título:      EL CASO · ¿Por qué Oracle solo no basta en el catálogo web?
+Subtítulo:   Atributos variables por instrumento + lectura rápida de pedidos
+Viñetas:
+- Una guitarra eléctrica (GE001) necesita maderas, trastes y pastillas; un micrófono
+  (AP001) necesita patrón polar e impedancia; un piano (TE001) teclas y polifonía.
+- En tablas SQL rígidas esto obliga a usar columnas llenas de NULL o tablas EAV.
+- Reconstruir un pedido web completo en SQL exige múltiples JOINs por cada visita.
+- Datos procesados en NoSQL: 10 productos oficiales (GA001–AC002), 5 pedidos
+  (PED-2026-5001 a 5005) y 6 reseñas de clientes verificadas.
+
+[Qué decir]:
+Cada familia de instrumentos tiene ficha técnica distinta. En vez de forzar un solo
+motor, separamos los datos ágiles del catálogo y reseñas hacia MongoDB.
+
+--------------------------------------------------------------------------------
+
+=== Diapositiva 3 · SQL vs NoSQL, Teorema CAP y Persistencia Políglota ===
+Título:      SQL vs NoSQL · Coexistencia Oracle 19c + MongoDB 7.x
+Tabla visual (copiar a diapositiva):
+| Criterio     | Oracle 19c (EP1 / EP2)              | MongoDB 7.x (EP3)                        |
+| Modelo       | Tablas 3FN (Schema-on-Write)        | Documentos BSON (Schema-on-Read)         |
+| Consistencia | ACID estricto (COMMIT / ROLLBACK)   | BASE / Atómico por documento             |
+| Teorema CAP  | CA (nodo único)                     | CP (Replica Set) / PACELC: PC/EC         |
+| Escalamiento | Vertical (CPU / RAM)                | Horizontal nativo (Sharding)             |
+| Rol en Tienda| Liquidaciones, PKG_SONIDO_VIVO, LOG | Catálogo polimórfico, pedidos web, BI    |
+
+[Qué decir]:
+Ante una partición de red (Teorema CAP), MongoDB es CP por defecto: prioriza
+consistencia rechazando escrituras en nodos minoritarios sin quórum. Así Oracle
+protege la contabilidad ACID y MongoDB atiende el catálogo a baja latencia.
+
+[Checklist preguntas Bloque 1]:
+1. ¿MongoDB reemplaza a Oracle? -> No, Persistencia Políglota (ACID vs flexibilidad).
+2. ¿Por qué MongoDB es CP y qué dice PACELC? -> En partición elige C; normal es PC/EC.
+3. ¿Qué diferencia hay entre JSON y BSON? -> BSON es binario y tipa ObjectId, Date, Int32 y Decimal128.
+
+================================================================================
+BLOQUE 2 · MODELADO DOCUMENTAL Y GOBERNANZA (IE3.2.2 — 20%)
+================================================================================
+
+=== Diapositiva 4 · Selección del Modelo Documental ===
+Título:      MODELO NOSQL · ¿Por qué Documental y no otra familia?
+Viñetas comparativas:
+- Clave-Valor (Redis): ultra rápida en RAM, pero no permite consultar por atributos internos.
+- Columnar Ancha (Cassandra): orientada a series temporales / IoT masivo.
+- Grafos (Neo4j): orientada a redes sociales o fraude relacional complejo.
+- Documental (MongoDB — ELEGIDA): almacena subdocumentos polimórficos BSON, soporta
+  índices secundarios sobre atributos anidados y agrega analítica nativa.
+
+[Qué decir]:
+Descartamos Clave-Valor porque el cliente filtra instrumentos por trastes, patrón polar
+o rango de precio; solo el modelo Documental permite indexar campos internos.
+
+--------------------------------------------------------------------------------
+
+=== Diapositiva 5 · Diseño de Colecciones: Embebido vs Referenciado ===
+Título:      ESTRUCTURA DE COLECCIONES · Regla de oro del acceso
+Bloque visual (3 tarjetas):
+1) productos (Polimórfico — 10 docs):
+   Campos fijos validados + subdocumento libre 'especificaciones' + array 'etiquetas'.
+2) pedidos (EMBEBIDO — 5 docs):
+   Incrusta 'cliente' y arreglo 'items'.
+   Por qué: lectura atómica en 1 solo I/O + inmutabilidad histórica de precios.
+3) resenas_clientes (REFERENCIADO — 6 docs):
+   Referencia por 'codigo_producto'.
+   Por qué: evita crecimiento desbordado (Unbounded Growth) y el límite BSON de 16 MB.
+
+[Qué decir]:
+Embebemos 'items' dentro de 'pedidos' porque si mañana sube la guitarra GE001, la
+boleta histórica mantiene intacto su precio. Separamos las reseñas para que un
+producto popular con miles de comentarios nunca supere el límite de 16 MB BSON.
+
+--------------------------------------------------------------------------------
+
+=== Diapositiva 6 · Gobernanza ($jsonSchema) e Índices Estratégicos ===
+Título:      CALIDAD Y RENDIMIENTO · Schema estricto + IXSCAN
+Viñetas:
+- Validadores $jsonSchema (validationLevel: "strict", validationAction: "error"):
+  exigen patrón código ^[A-Z]{2}[0-9]{3}$, precio >= 1, stock >= 0, calificación 1..5.
+- Evolución sin caída: comando collMod permite ajustar validadores en producción.
+- 6 índices creados para evitar COLLSCAN y asegurar IXSCAN:
+  1. productos: idx_prod_codigo (Unique), idx_prod_cat_precio, idx_prod_etiquetas_multikey
+  2. pedidos: idx_ped_codigo (Unique), idx_ped_cliente_fecha ("cliente.rut")
+  3. resenas_clientes: idx_res_producto (codigo_producto + calificacion)
+- Verificación en consola: .explain("executionStats") confirma stage "IXSCAN".
+
+[Qué decir]:
+Que MongoDB sea flexible no significa aceptar datos basura: $jsonSchema valida tipos
+y rangos en el motor, y nuestros 6 índices evitan escaneos secuenciales (COLLSCAN).
+
+[Checklist preguntas Bloque 2]:
+1. ¿Por qué embeber pedidos y no reseñas? -> Lectura atómica + inmutabilidad vs límite 16 MB.
+2. ¿Cómo garantizan integridad sin DDL SQL? -> $jsonSchema con validationAction: "error".
+3. ¿Cómo se actualiza un validador existente? -> Con db.runCommand({ collMod: ... }).
+
+================================================================================
+BLOQUE 3 · CRUD ATÓMICO, PIPELINE Y RESULTADOS (IE3.3.2 — 20%)
+================================================================================
+
+=== Diapositiva 7 · Operaciones CRUD Atómicas y Arreglos ===
+Título:      MANIPULACIÓN EN MONGOSH · Consultas y mutaciones seguras
+Código / Ejemplos reales ejecutados:
+- READ (Dot Notation): {"especificaciones.trastes": 22} o {"especificaciones.patron_polar": "Cardioide"} -> 3 docs.
+- READ ($elemMatch): garantiza que cantidad >= 2 y subtotal >= 20.000 ocurran en el MISMO item -> 2 pedidos.
+- UPDATE atómico ($inc + guarda):
+  db.productos.updateOne({ codigo: "AP001", stock: { $gte: 2 } }, { $inc: { stock: -2 } })
+  Evita race conditions: stock de SM58 baja atómicamente de 12 a 10.
+- ARRAYS ($addToSet vs $push): $addToSet evita tags duplicados en GE001; $push añade 2 cuerdas AC001 a PED-2026-5004 (total: 155.970 -> 173.950 CLP).
+- DELETE + Prueba negativa: deleteOne(TE002), deleteMany(CANCELADO) y rechazo de BAD01 por $jsonSchema.
+
+[Qué decir]:
+El mayor desafío de concurrencia es el stock: leer y usar $set sobrescribe compras
+simultáneas. Usar filtro de guarda + $inc resuelve la resta atómicamente en el motor.
+Y $elemMatch evita falsos positivos entre ítems distintos de un mismo pedido.
+
+--------------------------------------------------------------------------------
+
+=== Diapositiva 8 · Aggregation Pipeline y Verificación ===
+Título:      ANALÍTICA DE NEGOCIO · Aggregation Framework (8/8 checks OK)
+Tabla de resultados verificados (salida_verificacion_ep3.txt):
+- Pipeline 1 ($match -> $unwind -> $group -> $sort sobre pedidos COMPLETADO/PAGADO):
+  * 6 productos facturados por 2.351.920 CLP totales.
+  * Top 1: BA001 (Bajo Precision Bass) — 799.990 CLP.
+  * Top 2: GE001 (Fender Stratocaster) — 749.990 CLP.
+- Pipeline 2 ($lookup -> $unwind -> $group -> $project -> $sort sobre productos + resenas):
+  * Cruce documental entre colecciones: 5 instrumentos evaluados (5.0 en GE002, AP001, AP002; 4.5 en GE001; 4.0 en TE001).
+- Suite verificar_ep3_mongodb.py: valida sintaxis JS (node --check) y ejecuta 30 sentencias con 8/8 checks [OK].
+
+[Qué decir]:
+Con $unwind desdoblamos el arreglo embebido items para calcular facturación en tiempo
+real, y con $lookup unimos productos y reseñas sin necesitar llaves foráneas SQL.
+
+--------------------------------------------------------------------------------
+
+=== Diapositiva 9 · Conclusiones e Impacto ===
+Título:      CONCLUSIÓN · Ecosistema Híbrido Escalable
+Viñetas:
+- Se implementó el modelo completo en ep3_sonido_vivo.js (3 colecciones, 6 índices, CRUD y BI).
+- Integridad garantizada: $jsonSchema bloquea datos corruptos y $inc previene sobreventa.
+- Impacto en Sonido Vivo: catálogo listo para nuevas categorías sin alterar tablas ni generar NULLs.
+- Evolución futura: Change Streams para sincronizar stock Oracle -> MongoDB, índice $text para
+  buscador web y políticas TTL para purgar carritos abandonados.
+
+[Qué decir]:
+Sonido Vivo queda con el rigor contable ACID de Oracle y la agilidad, velocidad de lectura y
+escalabilidad horizontal de MongoDB funcionando en conjunto.
