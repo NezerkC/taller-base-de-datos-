@@ -729,7 +729,7 @@ def main() -> int:
         log_lines.append(msg)
 
     log("=========================================================================")
-    log("  VERIFICACION DETERMINISTA EP3 BDY1103 - SONIDO VIVO (MONGODB 7.x)")
+    log("  VERIFICACION DETERMINISTA EP3 BDY1103 - SONIDO VIVO (MONGODB 4.4)")
     log("=========================================================================")
 
     if not SCRIPT_PATH.exists():

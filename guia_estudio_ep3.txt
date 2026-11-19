@@ -14,8 +14,11 @@ preguntarse "¿estoy explicando el POR QUÉ desde el negocio de Sonido Vivo o so
 === PAGINA 2 ===
 Resumen del proyecto NoSQL (script ep3_sonido_vivo.js)
 Qué construimos:
-Una base de datos documental en MongoDB 7.x llamada sonido_vivo que convive con Oracle 19c
+Una base de datos documental en MongoDB 4.4 llamada sonido_vivo que convive con Oracle 19c
 bajo una arquitectura de Persistencia Políglota.
+
+Si preguntan: ¿Por qué desplegaron MongoDB 4.4 en el servidor en lugar de MongoDB 7.x y qué herramienta usan para administrarlo?
+El servidor Proxmox del laboratorio (CT100, 192.168.3.150) corre sobre un procesador Intel Celeron 3855U sin soporte de instrucciones AVX. Como MongoDB 5.0+ (incluido 7.x) exige AVX obligatoriamente y falla con Illegal instruction (SIGILL / Exit 132), se desplegó MongoDB 4.4, que es la última versión oficial sin ese requisito y soporta nativamente $jsonSchema (3.6), Decimal128 (3.4), $elemMatch/$lookup (3.2-3.6) y $round (4.2). Para administrarlo y visualizarlo se usa Mongo Express vía web (http://192.168.3.150:8084), el cliente CLI (mongo / mongosh) o MongoDB Compass (192.168.3.150:27017), ya que CloudBeaver Community Edition (:8978) solo incluye drivers SQL/JDBC (Oracle y PostgreSQL) y no soporta MongoDB.
 
 Colección / Objeto          Estrategia          Detalle
 productos                   Polimórfico         10 instrumentos oficiales (GA001 a AC002) con subdocumento
@@ -127,7 +130,7 @@ real sin extraer miles de documentos hacia la aplicación cliente.
 === PAGINA 7 ===
 Guion sugerido para la presentación ejecutiva (9 diapositivas)
 1. Portada: Evaluación Parcial 3 BDY1103 — Sonido Vivo da el salto a la Persistencia Políglota
-   incorporando MongoDB 7.x junto a Oracle 19c.
+   incorporando MongoDB 4.4 junto a Oracle 19c (desplegado en Proxmox CT100 con Mongo Express en :8084).
 2. El Problema en el Catálogo y Pedidos Web: Un teclado tiene polifonía y teclas; una guitarra
    tiene maderas y trastes. En tablas SQL esto genera rigidez o columnas nulas, y reconstruir un
    pedido requiere varios JOINs.
