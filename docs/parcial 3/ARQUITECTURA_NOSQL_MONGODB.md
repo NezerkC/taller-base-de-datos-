@@ -7,7 +7,7 @@
 
 ---
 
-## 1. Visión de Persistencia Políglota (Oracle 19c + MongoDB 7.x + Redis)
+## 1. Visión de Persistencia Políglota (Oracle 19c + MongoDB 4.4 + Redis)
 
 En **Sonido Vivo** no reemplazamos el motor relacional de las entregas anteriores; aplicamos **Persistencia Políglota** para asignar cada dominio al motor donde ofrece el mejor compromiso técnico:
 
@@ -23,7 +23,7 @@ En **Sonido Vivo** no reemplazamos el motor relacional de las entregas anteriore
        |                                  |                                  |
        v                                  v                                  v
 +--------------------+     +------------------------------+     +------------------------+
-|  REDIS (Caché RAM) |     |  ORACLE DATABASE 19c (ACID)  |     |  MONGODB 7.x (BASE/CP) |
+|  REDIS (Caché RAM) |     |  ORACLE DATABASE 19c (ACID)  |     |  MONGODB 4.4 (BASE/CP) |
 +--------------------+     +------------------------------+     +------------------------+
 | - Sesiones y JWT   |     | - Tablas 3FN: CLIENTE, VENTA |     | - productos (10 docs)  |
 | - Carrito efímero  |     | - PKG_SONIDO_VIVO            |     | - pedidos (Embebido)   |
@@ -42,12 +42,21 @@ flowchart TD
     API["Backend Orquestador Sonido Vivo"]:::cli
     R["Redis: Sesiones / Carrito"]:::red
     O["Oracle 19c: Core Transaccional ACID + PL/SQL"]:::ora
-    M["MongoDB 7.x: Catálogo Polimórfico, Pedidos Web y BI"]:::mon
+    M["MongoDB 4.4: Catálogo Polimórfico, Pedidos Web y BI"]:::mon
 
     API --> R
     API --> O
     API --> M
 ```
+
+### 1.1 Infraestructura, Elección de MongoDB 4.4 y Herramientas de Administración
+
+* **Justificación técnica de versión (`MongoDB 4.4` frente a `7.x`):** El contenedor de despliegue (`CT100`, IP `192.168.3.150`) se ejecuta sobre un nodo Proxmox con procesador **Intel Celeron 3855U**, el cual **no posee el juego de instrucciones `AVX`**. A partir de MongoDB `5.0+` (incluyendo `7.x`), los binarios oficiales exigen `AVX` de forma obligatoria y abortan con señal `SIGILL` (`Illegal instruction`, código `132`). **MongoDB 4.4** es la última rama oficial compatible sin `AVX` y soporta de forma nativa todas las capacidades empleadas en Sonido Vivo: validadores `$jsonSchema` (introducidos en 3.6), `Decimal128` (3.4), `$elemMatch` y `$lookup` (3.2–3.6) y `$round` (4.2).
+* **Herramientas de administración y visualización:**
+  * **Mongo Express (Web UI):** Desplegado en `http://192.168.3.150:8084` para inspección gráfica de colecciones, documentos BSON e índices en navegador.
+  * **Cliente CLI (`mongo` / `mongosh`):** Ejecución directa de `ep3_sonido_vivo.js`, consultas `.explain("executionStats")` y pruebas de gobernanza.
+  * **MongoDB Compass:** Cliente de escritorio conectable a `mongodb://admin:***@192.168.3.150:27017/?authSource=admin` para análisis visual de esquemas y planes de ejecución.
+  * **Aclaración sobre CloudBeaver:** La instancia **CloudBeaver Community Edition** (`:8978`) utilizada en entregas previas solo incorpora controladores SQL/JDBC (Oracle, PostgreSQL) y **no soporta MongoDB**, por lo que la gestión documental se realiza exclusivamente mediante Mongo Express, CLI o MongoDB Compass.
 
 ---
 
@@ -55,7 +64,7 @@ flowchart TD
 
 ### 2.1 Comparativa Relacional vs. No Relacional
 
-| Criterio | Relacional (Oracle 19c) | Documental (MongoDB 7.x) |
+| Criterio | Relacional (Oracle 19c) | Documental (MongoDB 4.4) |
 | :--- | :--- | :--- |
 | **Unidad de Almacenamiento** | Tablas bidimensionales normalizadas (3FN) con filas y columnas fijas. | Colecciones de documentos jerárquicos BSON (*Binary JSON*). |
 | **Esquema** | *Schema-on-Write* (DDL previo obligatorio, columnas nulas ante variabilidad). | *Schema-on-Read* flexible, gobernable con validadores `$jsonSchema`. |

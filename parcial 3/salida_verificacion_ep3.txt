@@ -1,5 +1,5 @@
 =========================================================================
-  VERIFICACION DETERMINISTA EP3 BDY1103 - SONIDO VIVO (MONGODB 7.x)
+  VERIFICACION DETERMINISTA EP3 BDY1103 - SONIDO VIVO (MONGODB 4.4)
 =========================================================================
 [OK] Sintaxis JavaScript validada con Node.js (C:\Program Files\nodejs\node.EXE)
 [OK] Estructura completa verificada: FASE 1 a FASE 7 presentes.
