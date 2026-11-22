@@ -1,7 +1,7 @@
 // =============================================================================
 // BDY1103 - Taller de Base de Datos - Evaluación Parcial 3 (EP3)
 // Caso de Estudio: Sonido Vivo (Tienda de Instrumentos Musicales - Viña del Mar)
-// Motor: MongoDB 7.x (mongosh)
+// Motor: MongoDB 4.4 (mongo / mongosh)
 // Arquitectura: Persistencia Políglota (Oracle 19c Core ACID + MongoDB NoSQL)
 // Integrantes: Dylan Sandoval – Víctor Martínez – Danilo Sepúlveda
 // =============================================================================
@@ -10,7 +10,7 @@
 db = db.getSiblingDB("sonido_vivo");
 
 print("=========================================================================");
-print("   SONIDO VIVO - INICIALIZACION Y VERIFICACION NOSQL (MONGODB 7.x)");
+print("   SONIDO VIVO - INICIALIZACION Y VERIFICACION NOSQL (MONGODB 4.4)");
 print("=========================================================================");
 
 // =============================================================================

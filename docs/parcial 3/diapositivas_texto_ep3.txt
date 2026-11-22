@@ -21,7 +21,7 @@ Pie visual:  Del núcleo transaccional Oracle 19c a la Persistencia Políglota
 
 [Qué decir]:
 Presentamos la tercera entrega de Sonido Vivo: no reemplazamos Oracle de las EP1/EP2,
-sino que incorporamos MongoDB 7.x para resolver los datos heterogéneos y pedidos web.
+sino que incorporamos MongoDB 4.4 para resolver los datos heterogéneos y pedidos web.
 
 --------------------------------------------------------------------------------
 
@@ -43,24 +43,32 @@ motor, separamos los datos ágiles del catálogo y reseñas hacia MongoDB.
 --------------------------------------------------------------------------------
 
 === Diapositiva 3 · SQL vs NoSQL, Teorema CAP y Persistencia Políglota ===
-Título:      SQL vs NoSQL · Coexistencia Oracle 19c + MongoDB 7.x
+Título:      SQL vs NoSQL · Coexistencia Oracle 19c + MongoDB 4.4
 Tabla visual (copiar a diapositiva):
-| Criterio     | Oracle 19c (EP1 / EP2)              | MongoDB 7.x (EP3)                        |
+| Criterio     | Oracle 19c (EP1 / EP2)              | MongoDB 4.4 (EP3)                        |
 | Modelo       | Tablas 3FN (Schema-on-Write)        | Documentos BSON (Schema-on-Read)         |
 | Consistencia | ACID estricto (COMMIT / ROLLBACK)   | BASE / Atómico por documento             |
 | Teorema CAP  | CA (nodo único)                     | CP (Replica Set) / PACELC: PC/EC         |
 | Escalamiento | Vertical (CPU / RAM)                | Horizontal nativo (Sharding)             |
 | Rol en Tienda| Liquidaciones, PKG_SONIDO_VIVO, LOG | Catálogo polimórfico, pedidos web, BI    |
 
+Nota de infraestructura y herramientas en servidor real:
+- Desplegado en servidor Proxmox (CT100, 192.168.3.150:27017) sobre CPU Intel Celeron 3855U:
+  se utiliza MongoDB 4.4 porque MongoDB 5.0+ (y 7.x) exige instrucciones AVX ausentes en este
+  procesador, manteniendo soporte nativo de $jsonSchema, Decimal128, $lookup y $round.
+- Administración visual: Mongo Express (http://192.168.3.150:8084), cliente CLI (mongo / mongosh)
+  y MongoDB Compass (CloudBeaver CE en :8978 solo soporta drivers SQL/JDBC).
+
 [Qué decir]:
 Ante una partición de red (Teorema CAP), MongoDB es CP por defecto: prioriza
 consistencia rechazando escrituras en nodos minoritarios sin quórum. Así Oracle
-protege la contabilidad ACID y MongoDB atiende el catálogo a baja latencia.
+protege la contabilidad ACID y MongoDB 4.4 atiende el catálogo a baja latencia.
 
 [Checklist preguntas Bloque 1]:
 1. ¿MongoDB reemplaza a Oracle? -> No, Persistencia Políglota (ACID vs flexibilidad).
 2. ¿Por qué MongoDB es CP y qué dice PACELC? -> En partición elige C; normal es PC/EC.
 3. ¿Qué diferencia hay entre JSON y BSON? -> BSON es binario y tipa ObjectId, Date, Int32 y Decimal128.
+4. ¿Por qué MongoDB 4.4 y no 7.x en el servidor? -> El Celeron 3855U carece de AVX (obligatorio desde 5.0+).
 
 ================================================================================
 BLOQUE 2 · MODELADO DOCUMENTAL Y GOBERNANZA (IE3.2.2 — 20%)
@@ -153,6 +161,8 @@ Tabla de resultados verificados (salida_verificacion_ep3.txt):
 - Pipeline 2 ($lookup -> $unwind -> $group -> $project -> $sort sobre productos + resenas):
   * Cruce documental entre colecciones: 5 instrumentos evaluados (5.0 en GE002, AP001, AP002; 4.5 en GE001; 4.0 en TE001).
 - Suite verificar_ep3_mongodb.py: valida sintaxis JS (node --check) y ejecuta 30 sentencias con 8/8 checks [OK].
+- Ejecución real verificada en servidor Proxmox CT100 (192.168.3.150:27017, MongoDB 4.4):
+  10 productos, 5 pedidos, 6 reseñas, IXSCAN confirmado en idx_prod_codigo (1 doc examinado, 0 ms) y Mongo Express 200 OK en :8084.
 
 [Qué decir]:
 Con $unwind desdoblamos el arreglo embebido items para calcular facturación en tiempo
